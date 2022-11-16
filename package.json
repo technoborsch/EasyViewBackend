@@ -1,0 +1,14 @@
+{
+  "name": "easyviewbackend",
+  "version": "1.0.0",
+  "description": "express.js + mongodb backend for EasyView app",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
