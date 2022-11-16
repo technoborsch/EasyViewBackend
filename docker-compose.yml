@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: mongo:latest
+    container_name: mongodb
+    env_file:
+      - db.env
+    volumes:
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./mongo-volume:/data/db
+    ports:
+      - "27017-27019:27017-27019"
+  sftp:
+    image: atmoz/sftp
+    volumes:
+      - ./sftp:/home/easyview/upload
+    ports:
+      - "9922:22"
+    command: easyview:easyview:1001
+  api:
+    build: .
+    ports:
+      - "8020:8080"
+    depends_on:
+      - db
+      - sftp
+    env_file:
+      - api.env

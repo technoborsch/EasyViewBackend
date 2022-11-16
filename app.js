@@ -4,7 +4,7 @@ const port = 8080;
 
 app.get('/', (req, res) => {
     res.send('Hello world');
-})
+});
 
 app.listen(port, ()=>{
     console.log(`Start listening on port ${port}`);
