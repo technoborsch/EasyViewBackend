@@ -3,25 +3,20 @@ version: "3.9"
 services:
   db:
     image: mongo
-    restart: always
     container_name: mongodb
     env_file:
       - db.env
     volumes:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./mongo-volume:/data/db
-    ports:
-      - "27017:27017"
   sftp:
     image: atmoz/sftp
-    restart: always
     volumes:
       - ./sftp:/home/easyview/upload
-    ports:
-      - "9922:22"
     command: easyview:easyview:1001
   api:
     build: .
+    image: evbackend
     restart: always
     ports:
       - "8020:8080"

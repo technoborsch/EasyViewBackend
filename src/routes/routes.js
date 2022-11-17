@@ -1,11 +1,11 @@
 const express = require("express")
-const Post = require("./models/Post")
+const Post = require("../models/Post")
 const router = express.Router()
 
 // Get all posts
 router.get("/posts", async (req, res) => {
-	const posts = await Post.find()
-	res.send(posts)
+	const posts = await Post.find();
+	res.send(posts);
 })
 
 //Save post
@@ -14,8 +14,8 @@ router.post("/posts", async (req, res) => {
 		title: req.body.title,
 		content: req.body.content,
 	})
-	await post.save()
-	res.send(post)
+	await post.save();
+	res.send(post);
 })
 
 module.exports = router
