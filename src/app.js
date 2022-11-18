@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const logger = require('morgan');
+const compression = require('compression');
 const admin = require('sriracha');
 
 const routes = require('./routes/routes');
@@ -28,6 +29,7 @@ mongoose
 		app.use(bodyParser.json());
 		app.use(bodyParser.urlencoded({extended: true}));
 		app.use(logger('dev'));
+		app.use(compression());
 
 		app.use(adminURL, admin({
 			username: adminUser,
