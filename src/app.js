@@ -1,3 +1,4 @@
+require('express-async-errors');
 const express = require('express');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
@@ -7,7 +8,9 @@ const logger = require('morgan');
 const compression = require('compression');
 const admin = require('sriracha');
 
-const routes = require('./routes/routes');
+const postRoutes = require('./routes/post.route');
+const authRoutes = require('./routes/auth.route');
+const {auth} = require("./middleware/auth");
 
 const dbUsername = process.env['DB_USERNAME'];
 const dbPassword = process.env['DB_PASSWORD'];
@@ -35,9 +38,15 @@ mongoose
 			username: adminUser,
 			password: adminPassword
 		}));
-		app.use('/api', routes);
+
+		app.use('/api', authRoutes);
+		app.use('/api', auth, postRoutes);
+
+		app.use((error, req, res, next) => {
+		  res.status(500).json({ error: error.message });
+		});
 
 		app.listen(port, ()=>{
 			console.log(`Start listening on port ${port}`);
 		});
-	})
+	});
