@@ -10,7 +10,7 @@ const admin = require('sriracha');
 
 const postRoutes = require('./routes/post.route');
 const authRoutes = require('./routes/auth.route');
-const {auth} = require("./middleware/auth");
+const {auth} = require("./middleware/auth.middleware");
 
 const dbUsername = process.env['DB_USERNAME'];
 const dbPassword = process.env['DB_PASSWORD'];
@@ -21,32 +21,37 @@ const adminURL = process.env['ADMIN_URL'];
 const adminUser = process.env['ADMIN_USER'];
 const adminPassword = process.env['ADMIN_PASSWORD'];
 
-mongoose
-    .connect(`mongodb://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${dbDatabase}`, { useNewUrlParser: true })
-	.then(() => {
-		const app = express();
-		const port = 8080;
+const app = express();
+const port = 8080;
 
-		app.use(helmet());
-		app.use(cors());
-		app.use(bodyParser.json());
-		app.use(bodyParser.urlencoded({extended: true}));
-		app.use(logger('dev'));
-		app.use(compression());
+app.use(helmet());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(logger('dev'));
+app.use(compression());
 
-		app.use(adminURL, admin({
-			username: adminUser,
-			password: adminPassword
-		}));
+app.use(adminURL, admin({
+	username: adminUser,
+	password: adminPassword
+}));
 
-		app.use('/api', authRoutes);
-		app.use('/api', auth, postRoutes);
+app.use('/api', authRoutes);
+app.use('/api', auth, postRoutes);
 
-		app.use((error, req, res, next) => {
-		  res.status(500).json({ error: error.message });
-		});
+app.use((error, req, res, next) => {
+	res.status(500).json({ error: error.message });
+});
 
-		app.listen(port, ()=>{
-			console.log(`Start listening on port ${port}`);
-		});
+mongoose.connect(
+	`mongodb://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${dbDatabase}`,
+	{
+		useNewUrlParser: true
+	}
+).then(() => {
+app.listen(port, ()=>{
+		console.log(`Start listening on port ${port}`);
 	});
+});
+
+module.exports = app;

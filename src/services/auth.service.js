@@ -26,12 +26,11 @@ const signup = async (data) => {
   });
 };
 
-const signin = async (headers) => {
-  const authString = headers['Authorization'];
-  if (!authString) {
+const signin = async (header) => {
+  if (!header) {
     throw new Error('Credentials were not provided');
   }
-  const bearerString = authString.split(' ');
+  const bearerString = header.split(' ');
   if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Bearer') {
     throw new Error('Credentials were not provided');
   }
@@ -104,12 +103,11 @@ const resetPassword = async (userId, token, password) => {
   return true;
 };
 
-const refreshToken = async (headers) => {
-  const authString = headers['Authorization'];
-  if (!authString) {
+const refreshToken = async (header) => {
+  if (!header) {
     throw new Error('Credentials were not provided');
   }
-  const bearerString = authString.split(' ');
+  const bearerString = header.split(' ');
   if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Bearer') {
     throw new Error('Credentials were not provided');
   }

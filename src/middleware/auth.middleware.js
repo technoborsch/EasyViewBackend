@@ -2,14 +2,14 @@ const jwt = require('jsonwebtoken');
 
 const JWTSecret = process.env['JWT_SECRET'];
 
-const auth = async (req, res, next) => {
-    const authString = req.headers['Authorization'];
+const authMiddleware = async (req, res, next) => {
+    const authString = req.get('Authorization');
     if (!authString) {
-        res.status(403).json({ error: 'Credentials were not provided 1'});
+        res.status(403).json({ error: 'Credentials were not provided'});
     }
     const bearerString = authString.split(' ');
     if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Token') {
-        res.status(403).json({ error: 'Credentials were not provided 2'});
+        res.status(403).json({ error: 'Credentials were not provided'});
     }
     const isValid = jwt.verify(bearerString[1], JWTSecret, {algorithm: 'HS512'});
     if (!isValid) {
@@ -18,4 +18,4 @@ const auth = async (req, res, next) => {
     next();
 }
 
-module.exports = { auth }
+module.exports = { auth: authMiddleware }

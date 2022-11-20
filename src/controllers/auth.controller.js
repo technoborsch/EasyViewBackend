@@ -12,7 +12,7 @@ const signUpController = async (req, res, next) => {
 };
 
 const signInController = async (req, res, next) => {
-  const signInService = await signin(req.headers);
+  const signInService = await signin(req.get('Authorization'));
   return res.json(signInService);
 }
 
@@ -33,7 +33,7 @@ const resetPasswordController = async (req, res, next) => {
 };
 
 const refreshTokenController = async (req, res, next) => {
-  const refreshTokenService = await refreshToken(req.headers);
+  const refreshTokenService = await refreshToken(req.get('Authorization'));
   return res.json(refreshTokenService);
 }
 

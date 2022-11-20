@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "test": "test"
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
@@ -23,5 +23,8 @@
     "nodemailer": "^6.8.0",
     "sriracha": "^1.0.0",
     "validator": "^13.7.0"
+  },
+  "devDependencies": {
+    "jest": "^29.3.1"
   }
 }
