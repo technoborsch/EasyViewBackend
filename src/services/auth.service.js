@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const Token = require("../models/token.model");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const ReqError = require('../utils/ReqError')
 
 const JWTSecret = process.env['JWT_SECRET'];
 const bcryptSalt = process.env['BCRYPT_SALT'];
@@ -11,7 +12,7 @@ const clientURL = process.env['FRONTEND_URL'];
 const signup = async (data) => {
   let user = await User.findOne({ email: data.email });
   if (user) {
-    throw new Error("Email already exist");
+    throw new ReqError("Email already exist", 409);
   }
   user = new User(data);
   const time = Date.now();
@@ -28,20 +29,20 @@ const signup = async (data) => {
 
 const signin = async (header) => {
   if (!header) {
-    throw new Error('Credentials were not provided');
+    throw new ReqError('Credentials were not provided', 401);
   }
   const bearerString = header.split(' ');
   if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Bearer') {
-    throw new Error('Credentials were not provided');
+    throw new ReqError('Credentials were not provided', 401);
   }
   const credentials = Buffer.from(bearerString[1], 'base64').toString('utf-8');
   const user = await User.findOne({email: credentials[0]});
   if (!user) {
-    throw new Error('Wrong credentials');
+    throw new ReqError('Wrong credentials', 401);
   }
   const isPasswordValid = bcrypt.compare(credentials[1], user.password);
   if (!isPasswordValid) {
-    throw new Error('Wrong credentials');
+    throw new ReqError('Wrong credentials', 401);
   }
   const time = Date.now();
   const token = jwt.sign({ id: user._id }, JWTSecret, {expiresIn: '30d'});
@@ -59,7 +60,7 @@ const requestPasswordReset = async (email) => {
 
   const user = await User.findOne({ email });
 
-  if (!user) throw new Error("User does not exist");
+  if (!user) throw new ReqError("User does not exist", 404);
   let token = await Token.findOne({ userId: user._id });
   if (token) await token.deleteOne();
   let resetToken = crypto.randomBytes(32).toString("hex");
@@ -78,11 +79,11 @@ const requestPasswordReset = async (email) => {
 const resetPassword = async (userId, token, password) => {
   let passwordResetToken = await Token.findOne({ userId });
   if (!passwordResetToken) {
-    throw new Error("Invalid or expired password reset token");
+    throw new ReqError("Invalid or expired password reset token", 401);
   }
   const isValid = await bcrypt.compare(token, passwordResetToken.token);
   if (!isValid) {
-    throw new Error("Invalid or expired password reset token");
+    throw new ReqError("Invalid or expired password reset token", 401);
   }
   const hash = await bcrypt.hash(password, Number(bcryptSalt));
   await User.updateOne(
@@ -105,16 +106,16 @@ const resetPassword = async (userId, token, password) => {
 
 const refreshToken = async (header) => {
   if (!header) {
-    throw new Error('Credentials were not provided');
+    throw new ReqError('Credentials were not provided', 401);
   }
   const bearerString = header.split(' ');
   if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Bearer') {
-    throw new Error('Credentials were not provided');
+    throw new ReqError('Credentials were not provided', 401);
   }
   const decodedUser = await jwt.verify(bearerString[1], JWTSecret, {algorithm: 'HS512'});
   const user = await User.findOne({_id: decodedUser.id});
   if (!user) {
-    throw new Error('There is no such user');
+    throw new ReqError('There is no such user', 404);
   }
   return {
     token: await jwt.sign({id: user._id}, JWTSecret, {expiresIn: '1d'}),

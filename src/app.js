@@ -40,7 +40,11 @@ app.use('/api', authRoutes);
 app.use('/api', auth, postRoutes);
 
 app.use((error, req, res, next) => {
-	res.status(500).json({ error: error.message });
+	if (error.status) {
+		res.status(error.status).json({ error: error.message })
+	} else {
+		res.status(500).json({ error: 'server error' });
+	}
 });
 
 mongoose.connect(
