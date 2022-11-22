@@ -8,10 +8,6 @@ const logger = require('morgan');
 const compression = require('compression');
 const admin = require('sriracha');
 
-const postRoutes = require('./routes/post.route');
-const authRoutes = require('./routes/auth.route');
-const {auth} = require("./middleware/auth.middleware");
-
 const dbUsername = process.env['DB_USERNAME'];
 const dbPassword = process.env['DB_PASSWORD'];
 const dbHost = process.env['DB_HOST'];
@@ -20,6 +16,10 @@ const dbDatabase = process.env['DB_DATABASE'];
 const adminURL = process.env['ADMIN_URL'];
 const adminUser = process.env['ADMIN_USER'];
 const adminPassword = process.env['ADMIN_PASSWORD'];
+
+const postRoutes = require('./routes/post.route');
+const authRoutes = require('./routes/auth.route');
+const userRoutes = require('./routes/user.route');
 
 const app = express();
 const port = 8080;
@@ -33,11 +33,12 @@ app.use(compression());
 
 app.use(adminURL, admin({
 	username: adminUser,
-	password: adminPassword
+	password: adminPassword,
 }));
 
-app.use('/api', authRoutes);
-app.use('/api', auth, postRoutes);
+app.use('/api/v1', authRoutes);
+app.use('/api/v1', postRoutes);
+app.use('/api/v1', userRoutes);
 
 app.use((error, req, res, next) => {
 	if (error.status) {

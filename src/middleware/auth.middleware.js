@@ -22,7 +22,12 @@ const authMiddleware = async (req, res, next) => {
     if (!isValid) {
         throw new ReqError('Wrong credentials, access denied', 401);
     }
-    const decoded = jwt.decode(bearerString[1]);
+    let decoded;
+    try {
+        decoded = jwt.decode(bearerString[1]);
+    } catch (err) {
+        throw new ReqError('Corrupted token', 401);
+    }
     const user = await User.findOne({_id: decoded.id});
     if (!user) {
         throw new ReqError('Trying to access data as non-existent user', 401);

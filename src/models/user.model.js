@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const {isEmail} = require('validator');
 const bcrypt = require('bcrypt');
+const {Schema} = require("mongoose");
 
 const bcryptSalt = process.env['BCRYPT_SALT'];
 
@@ -24,6 +25,11 @@ const userSchema = mongoose.Schema({
             message: () => `Password should be at least 6 characters long`
         },
     },
+    isActive: {
+        type: Boolean,
+        default: false,
+    },
+
 },{
     timestamps: true,
 });
