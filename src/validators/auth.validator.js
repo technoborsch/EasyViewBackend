@@ -37,6 +37,11 @@ const activateValidator = (req, res, next) => {
     if (!data.hasOwnProperty('lastName')) {
         res.status(400).json({error: 'Request body should contain lastName attribute'});
     }
+    const numberOfDataAttributes = Object.keys(data).length;
+    if (numberOfDataAttributes === 6 && !data.hasOwnProperty('patronymic') || numberOfDataAttributes > 6 ) {
+        res.status(400).json({error: 'Request body must contain id, name, lastName, token, password fields ' +
+                'and optional patronymic field, any other form is prohibited'});
+    }
     next();
 };
 

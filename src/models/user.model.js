@@ -48,6 +48,7 @@ const userSchema = mongoose.Schema({
 },
 {
     timestamps: true,
+    minimize: false,
 });
 
 userSchema.path('password').required(function () { return this.isActive; }, 'Password is required for active users');
