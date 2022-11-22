@@ -1,5 +1,6 @@
 const {
   signup,
+  activate,
   signin,
   requestPasswordReset,
   resetPassword,
@@ -9,6 +10,11 @@ const {
 const signUpController = async (req, res, next) => {
   const signupService = await signup(req.body);
   return res.json(signupService);
+};
+
+const activateUserController = async (req, res, next) => {
+  const activateService = await activate(req.body);
+  return res.json(activateService);
 };
 
 const signInController = async (req, res, next) => {
@@ -27,18 +33,19 @@ const resetPasswordController = async (req, res, next) => {
   const resetPasswordService = await resetPassword(
     req.body.userId,
     req.body.token,
-    req.body.password
+    req.body.password,
   );
   return res.json(resetPasswordService);
 };
 
 const refreshTokenController = async (req, res, next) => {
-  const refreshTokenService = await refreshToken(req.get('Authorization'));
+  const refreshTokenService = await refreshToken(req.user._id);
   return res.json(refreshTokenService);
 }
 
 module.exports = {
   signUpController,
+  activateUserController,
   signInController,
   resetPasswordRequestController,
   resetPasswordController,

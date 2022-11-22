@@ -17,22 +17,42 @@ const userSchema = mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
         validate: {
             validator: (password) => {
                 return password.length >= 6;
             },
-            message: () => `Password should be at least 6 characters long`
+            message: () => `Password should be at least 6 characters long`,
         },
+    },
+    name: {
+        type: String,
+    },
+    patronymic: {
+        type: String,
+    },
+    lastName: {
+        type: String,
     },
     isActive: {
         type: Boolean,
         default: false,
     },
-
-},{
+    isAdmin: {
+        type: Boolean,
+        default: false,
+    },
+    isModerator: {
+        type: Boolean,
+        default: false
+    },
+},
+{
     timestamps: true,
 });
+
+userSchema.path('password').required(function () { return this.isActive; }, 'Password is required for active users');
+userSchema.path('name').required(function () { return this.isActive; }, 'Name is required for active users');
+userSchema.path('lastName').required(function () { return this.isActive; }, 'Last name is required for active users');
 
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) {

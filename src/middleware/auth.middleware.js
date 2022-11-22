@@ -29,7 +29,7 @@ const authMiddleware = async (req, res, next) => {
         throw new ReqError('Corrupted token', 401);
     }
     const user = await User.findOne({_id: decoded.id});
-    if (!user) {
+    if (!user || !user.isActive) {
         throw new ReqError('Trying to access data as non-existent user', 401);
     }
     req.user = user;
