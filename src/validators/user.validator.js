@@ -1,7 +1,16 @@
+const {bodyValidatorFactory} = require("../utils/ValidatorFactory");
+const {nameValidator, passwordValidator} = require("./fieldValidators");
+const {isAlpha} = require("validator");
+
 const updateProfileValidator = (req, res, next) => {
-    if (!req.hasOwnProperty('body') || !req.body) {
-        res.status(400).json({error: 'No data in request body was provided'});
-    }
+    const validateBody = bodyValidatorFactory([],
+        [
+        ['name', nameValidator],
+        ['lastName', isAlpha],
+        ['patronymic', isAlpha],
+        ['password', passwordValidator],
+    ]);
+    validateBody(req);
     next();
 };
 

@@ -4,6 +4,15 @@ const ReqError = require("../utils/ReqError");
 
 const JWTSecret = process.env['JWT_SECRET'];
 
+/***
+ * Authentication middleware that checks if correct authorization information has been provided, user exists and active
+ * and attaches authorized user to request.
+ *
+ * @param req Request that should be authorized
+ * @param res Response object
+ * @param next Next function
+ * @returns {Promise<void>} Void promise because async function
+ */
 const authMiddleware = async (req, res, next) => {
     const authString = req.get('Authorization');
     if (!authString) {

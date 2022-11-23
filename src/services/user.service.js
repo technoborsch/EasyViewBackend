@@ -1,18 +1,24 @@
+const {User} = require('../models/user.model')
+const userView = require('../serializers/user.serializer')
 
-const returnSelfService = async (req) => {
-    return {
-        email: req.user.email,
-        name: req.user.name,
-        patronymic: req.user.patronymic,
-        lastName: req.user.lastName,
-        isAdmin: req.user.isAdmin,
-        isModerator: req.user.isModerator,
-    };
+/**
+ * Returns trimmed info about given user
+ *
+ * @param {User} user User that has to be trimmed and returned
+ * @returns {Promise<{userView}>} Promise with user information
+ */
+const returnSelfService = async (user) => {
+    return userView(user);
 };
 
-const updateProfile = async (req) => {
-    const data = req.body;
-    const user = req.user;
+/**
+ * Service to update user profile
+ *
+ * @param {Object} data Data with information that has to be changed in given user's profile
+ * @param {User} user User whose profile has to be changed
+ * @returns {Promise<{userView}>} Promise with updated user's info
+ */
+const updateProfile = async (data, user) => {
     if (data.password) {
         user.password = data.password;
     }
@@ -26,20 +32,23 @@ const updateProfile = async (req) => {
         user.patronymic = data.patronymic;
     }
     const updatedUser = await user.save();
-    return {
-        email: updatedUser.email,
-        name: updatedUser.name,
-        patronymic: updatedUser.patronymic,
-        lastName: updatedUser.lastName,
-        isAdmin: updatedUser.isAdmin,
-        isModerator: updatedUser.isModerator,
-    };
+    return userView(updatedUser);
 };
 
+/**
+ * Service to delete user profile (actually just change it's isActive property)
+ *
+ * @param {User} user User that has to be deleted
+ * @returns {Promise<{success: boolean}>} Promise with info whether deletion has been successful
+ */
 const deleteProfile = async(user) => {
     user.isActive = false;
     await user.save();
     return {success: true}
 };
 
-module.exports = { returnSelfService, updateProfile, deleteProfile };
+module.exports = {
+    returnSelfService,
+    updateProfile,
+    deleteProfile
+};

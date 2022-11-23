@@ -1,9 +1,15 @@
-const {getUserEmail, register, activate, signin, getPosts} = require('../utils/RequestFactory');
+const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
+const {getPosts} = require("../misc/misc.request");
+const {
+    registerUser,
+    activate,
+    signin
+} = require("./auth.request");
 
-const userEmail = getUserEmail();
-const password = 'superstrongpassword';
-const name = 'John';
-const lastName = 'Wick';
+const userEmail = generateUserEmail();
+let password = 'superstrongpassword';
+let name = 'John';
+let lastName = 'Wick';
 let accessToken;
 let activationToken;
 let id;
@@ -16,7 +22,7 @@ test('Try to access protected path and be rejected', async () => {
 });
 
 test('Register new user and retrieve an activation token', async () => {
-    const res = await register(userEmail);
+    const res = await registerUser(userEmail);
     const returnedData = await res.json();
     expect(res.status).toBe(200);
     expect(returnedData).toHaveProperty('userId');
@@ -42,9 +48,9 @@ test('Signin and get access token and user data', async () => {
 });
 
 test('Try to register the same email again and get an error', async () => {
-    const res = await register(userEmail, password);
-    expect(res.status).toBe(409);
+    const res = await registerUser(userEmail);
     const returnedData = await res.json();
+    expect(res.status).toBe(409);
     expect(returnedData).toHaveProperty('error');
 });
 
