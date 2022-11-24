@@ -1,4 +1,5 @@
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
+const extractDataFromEmailLink = require('../../../utils/ExtractDataFromEmailLink');
 const {getPosts} = require("../misc/misc.request");
 const {
     registerUser,
@@ -24,11 +25,19 @@ test('Try to access protected path and be rejected', async () => {
 test('Register new user and retrieve an activation token', async () => {
     const res = await registerUser(userEmail);
     const returnedData = await res.json();
+    console.log(returnedData);
     expect(res.status).toBe(200);
-    expect(returnedData).toHaveProperty('userId');
-    expect(returnedData).toHaveProperty('token');
-    id = returnedData.userId;
-    activationToken = returnedData.token;
+    expect(returnedData).toHaveProperty('success', true);
+    const data = await extractDataFromEmailLink(userEmail);
+    activationToken = data[0];
+    id = data[1];
+});
+
+test("Try to register the same email while previous account hasn't been activated", async () => {
+    const res = await registerUser(userEmail);
+    const returnedData = await res.json();
+    expect(res.status).toBe(409);
+    expect(returnedData).toHaveProperty('error');
 });
 
 test('Activate new user', async () => {

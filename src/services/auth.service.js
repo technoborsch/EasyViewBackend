@@ -5,16 +5,19 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
 const ReqError = require('../utils/ReqError');
-const userView = require('../serializers/user.serializer')
+const userView = require('../serializers/user.serializer');
+const sendEmail = require('../utils/sendEmail');
 
 const JWTSecret = process.env['JWT_SECRET'];
 const bcryptSalt = process.env['BCRYPT_SALT'];
+const frontendUrl = process.env['FRONTEND_URL'];
+const JWTExpiry = process.env['JWT_EXPIRY'];
 
 /**
  * A service used to sign up a user with given data
  *
  * @param {Object<{email: string}>} data Object that contains email field
- * @returns {Promise<{userId:string, token: string}>} Promise that fulfils with registered used ID and activation token
+ * @returns {Object<{success: Boolean}>} Object that informs that registration was successful.
  */
 const signup = async (data) => {
   let user = await User.findOne({ email: data.email});
@@ -35,11 +38,18 @@ const signup = async (data) => {
     token: hash,
     createdAt: Date.now(),
   }).save();
-  //Return created user id and activation token
-  return {
-    userId: user._id,
-    token: activateToken,
-  };
+  //Create confirmation link and send email to registered user
+  const link = frontendUrl + '/confirm_email' + '?' + `token=${activateToken}` + '&' + `id=${user._id}`;
+  await sendEmail(
+      data.email,
+      'Easyview registration',
+      {
+        link: link,
+      },
+      '../templates/registrationEmail.handlebar'
+      );
+  //Return success info
+  return {success: true};
 };
 
 /**
@@ -86,23 +96,22 @@ const signin = async (email, password) => {
   if (!isPasswordValid) {
     throw new ReqError('Wrong email or password', 401);
   }
-  //Create new token that expires in some time
+  //Create new token that expires in set time
   const time = Date.now();
-  const token = jwt.sign({ id: user._id }, JWTSecret, {expiresIn: '30d'}); //TODO move to environmental variables
+  const token = jwt.sign({ id: user._id }, JWTSecret, {expiresIn: JWTExpiry + 'd'});
   //Return data about authorized user, created access token and information when it will be expired
   return {
     user: userView(user),
     token: token,
-    expiry: time + 30 * 24 * 60 * 60 * 1000, // 30 days from now
+    expiry: time + Number.parseInt(JWTExpiry) * 24 * 60 * 60 * 1000,
   };
-
 };
 
 /**
  * Service to process password reset requests
  *
  * @param {string} email Email of user whose password should be reset
- * @returns {Promise<{userId: string, token: string}>} Promise that fulfills with info of user's id and token to reset password
+ * @returns {Object<{success: Boolean}>} Promise that fulfills with info of user's id and token to reset password
  */
 const requestPasswordReset = async (email) => {
   //If there is no such user or the user is inactive, reject request
@@ -119,8 +128,19 @@ const requestPasswordReset = async (email) => {
     token: hash,
     createdAt: Date.now(),
   }).save();
-  //Return user id and token
-  return {userId: user._id, token: resetToken};
+  //Generate link to change password and send message to user's email
+  const link = frontendUrl + '/reset_password' + '?' + `token=${resetToken}` + '&' + `id=${user._id}`
+  await sendEmail(
+      email,
+      'Password reset request',
+      {
+        name: user.name,
+        link: link,
+      },
+      '../templates/passwordResetEmail.handlebar',
+  );
+  //Return success information
+  return {success: true};
 };
 
 /**
@@ -161,12 +181,12 @@ const resetPassword = async (userId, token, password) => {
  * Service to get new access tokens
  *
  * @param {string} userId User for whom a token must be issued
- * @returns {Promise<{expiry: number, token: string}>} Promise with token and it's expiration information
+ * @returns {Promise<{expiry: number, token: string}>} Promise with token and its expiration information
  */
 const refreshToken = async (userId) => {
   return {
-    token: await jwt.sign({id: userId}, JWTSecret, {expiresIn: '1d'}),
-    expiry: Date.now() + 24 * 60 * 60 * 1000,
+    token: await jwt.sign({id: userId}, JWTSecret, {expiresIn: JWTExpiry + 'd'}),
+    expiry: Date.now() + Number.parseInt(JWTExpiry) * 24 * 60 * 60 * 1000,
   };
 };
 

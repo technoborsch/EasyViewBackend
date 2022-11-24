@@ -4,6 +4,7 @@
 init-mongo.js
 db.env
 api.env
+mail.env
 
 #Docker-compose mounted volumes
 /mongo-volume

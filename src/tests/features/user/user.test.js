@@ -1,4 +1,4 @@
-const {generateUserEmail} = require('../../../utils/GenerateUserEmail')
+const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
 
 const {
     signin,

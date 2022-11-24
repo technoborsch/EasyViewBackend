@@ -3,6 +3,7 @@ const {
     activate,
     signin
 } = require("./auth.request");
+const extractDataFromEmailLink = require("../../../utils/ExtractDataFromEmailLink");
 
 /***
  * Function that performs user's registration, activation and login and returns promise with received access token.
@@ -15,23 +16,13 @@ const {
  * @returns {Promise<string>} Promise with access token
  */
 const registerActivateAndLogin = async (email, name, lastName, password, patronymic) => {
-    const idAndToken = await performRegistration(email);
-    const id = idAndToken.userId;
-    const token = idAndToken.token;
+    await registerUser(email);
+    const data = await extractDataFromEmailLink(email);
+    const token = data[0];
+    const id = data[1];
     await performActivation(id, token, name, lastName, password, patronymic);
     const userAndToken = await performLogin(email, password);
     return userAndToken.token;
-};
-
-/***
- * Function that performs registration with given email
- *
- * @param {string} email User's email
- * @returns {Promise<Object>} Promise with response from server
- */
-const performRegistration = async (email) => {
-    const response = await registerUser(email);
-    return await response.json();
 };
 
 /***
@@ -65,6 +56,5 @@ const performLogin = async (email, password) => {
 module.exports = {
     registerActivateAndLogin,
     performLogin,
-    performRegistration,
     performActivation,
 };
