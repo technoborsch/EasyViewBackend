@@ -1,17 +1,17 @@
 const {isAlpha, isBase64, isJWT} = require('validator');
 
 const nameValidator = (name) => {
-    if (!isAlpha(name, 'en-US' || !isAlpha(name, 'ru-RU'))) {return false}
+    if (!isAlpha(name, 'en-US') && !isAlpha(name, 'ru-RU')) {return false}
     return name.length >= 2 && name.length <= 100;
 };
 
 const lastNameValidator = (lastName) => {
-    if (!isAlpha(lastName, 'en-US' || !isAlpha(lastName, 'ru-RU'))) {return false}
+    if (!isAlpha(lastName, 'en-US') && !isAlpha(lastName, 'ru-RU')) {return false}
     return lastName.length >= 1 && lastName.length <= 100;
 };
 
 const patronymicValidator = (patronymic) => {
-    if (!isAlpha(patronymic, 'en-US' || !isAlpha(patronymic, 'ru-RU'))) {return false}
+    if (!isAlpha(patronymic, 'en-US') && !isAlpha(patronymic, 'ru-RU')) {return false}
     return patronymic.length >= 5 && patronymic.length <= 100;
 };
 

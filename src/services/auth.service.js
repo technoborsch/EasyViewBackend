@@ -25,11 +25,14 @@ const signup = async (data) => {
   if (user && user.isActive) {
     throw new ReqError("Email already exist", 409);
   }
-  user = new User(data); //Potentially dangerous, very strict validation of data must be performed
-  await user.save();
-  //If there is already a token for this user, delete it
-  let token = await Token.findOne({ userId: user._id });
-  if (token) await token.deleteOne();
+  if (!user) { //Then create one
+    user = new User(data); //Potentially dangerous, very strict validation of data must be performed
+    await user.save();
+  } else { //Then it means that we have not active existing user that probably already had a token
+    //If there is already a token for this user, reject request
+    let token = await Token.findOne({ userId: user._id });
+    if (token) throw new ReqError('You already have a registration token, please use it or try again later', 409)
+  }
   //Create a token with this user id and random activation string, encrypted with bcrypt
   let activateToken = crypto.randomBytes(32).toString("hex");
   const hash = await bcrypt.hash(activateToken, Number(bcryptSalt));
@@ -61,7 +64,7 @@ const signup = async (data) => {
  */
 const activate = async (data) => {
   const activationToken = await Token.findOne({userId: data.id});
-  //If there is no such token or it is for another user, reject request
+  //If there is no such token or the token is for another user, reject request
   if (!activationToken) throw new ReqError('Invalid or expired activation token', 401);
   const isValid = bcrypt.compare(data.token, activationToken.token);
   if (!isValid) throw new ReqError('Invalid or expired activation token', 401);

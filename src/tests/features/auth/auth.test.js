@@ -16,7 +16,7 @@ let activationToken;
 let id;
 
 test('Try to access protected path and be rejected', async () => {
-    const res = await getPosts();
+    const res = await getPosts('something');
     expect(res.status).toBe(401);
     const returnedData = await res.json();
     expect(returnedData).toHaveProperty('error');
@@ -25,7 +25,6 @@ test('Try to access protected path and be rejected', async () => {
 test('Register new user and retrieve an activation token', async () => {
     const res = await registerUser(userEmail);
     const returnedData = await res.json();
-    console.log(returnedData);
     expect(res.status).toBe(200);
     expect(returnedData).toHaveProperty('success', true);
     const data = await extractDataFromEmailLink(userEmail);
