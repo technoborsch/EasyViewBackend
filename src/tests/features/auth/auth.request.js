@@ -6,15 +6,13 @@ const requestFactory = require("../../../utils/RequestFactory");
  * @param {string} email Email that a new user should be registered with
  * @returns {Promise<Response>} Promise with response from server
  */
-const registerUser = (email) => requestFactory(
+let registerUser = (email) => requestFactory(
     'post',
     '/signup',
-    'sometoken',
+    null,
     {
         email: email,
     },
-    null,
-    null,
 );
 
 /***
@@ -28,7 +26,7 @@ const registerUser = (email) => requestFactory(
  * @param {string} [patronymic] User's patronymic
  * @returns {Promise<Response>} Promise with response from server
  */
-const activate = (id, token, name, lastName, password, patronymic) => requestFactory(
+let activate = (id, token, name, lastName, password, patronymic) => requestFactory(
     'post',
     '/activate',
     null,
@@ -49,12 +47,13 @@ const activate = (id, token, name, lastName, password, patronymic) => requestFac
  * @param password Password of a user
  * @returns {Promise<Response>} Promise with response from server
  */
-const signin = (email, password) => requestFactory(
+let signin = (email, password) => requestFactory(
     'post',
     '/signin',
     null,
     null,
-    Buffer.from(email + ':' + password, 'utf-8').toString('base64'),
+    email,
+    password
 );
 
 module.exports = {

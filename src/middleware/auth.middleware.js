@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model')
 const ReqError = require("../utils/ReqError");
+const {tokenHeaderValidator} = require("../validators/fieldValidators");
 
 const JWTSecret = process.env['JWT_SECRET'];
 
@@ -15,16 +16,15 @@ const JWTSecret = process.env['JWT_SECRET'];
  */
 const authMiddleware = async (req, res, next) => {
     const authString = req.get('Authorization');
-    if (!authString) {
-        throw new ReqError('Credentials were not provided', 401);
-    }
-    const bearerString = authString.split(' ');
-    if (bearerString.length < 2 || bearerString.length !== 2 || bearerString[0] !== 'Token') {
-        throw new ReqError('Credentials were not provided', 401);
+    if (!authString) {throw new ReqError('Credentials were not provided', 401);}
+    if (!tokenHeaderValidator(authString)) {
+        throw new ReqError('Wrong credentials - "Authorization" header must contain information in format "Token" +' +
+            '" " + "{valid JWT token}. Check this header"', 401);
     }
     let isValid;
+    const JWT = authString.split(" ")[1];
     try {
-        isValid = jwt.verify(bearerString[1], JWTSecret, {algorithm: 'HS512'});
+        isValid = jwt.verify(JWT, JWTSecret, {algorithm: 'HS512'});
     } catch (err) {
         throw new ReqError('Corrupted token', 401);
     }
@@ -33,7 +33,7 @@ const authMiddleware = async (req, res, next) => {
     }
     let decoded;
     try {
-        decoded = jwt.decode(bearerString[1]);
+        decoded = jwt.decode(JWT, {algorithm: 'HS512'});
     } catch (err) {
         throw new ReqError('Corrupted token', 401);
     }

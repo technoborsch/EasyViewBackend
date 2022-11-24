@@ -11,9 +11,8 @@
  */
 const requestFactory = (method, url, token, body, login, password) => {
     const baseUrl = 'http://localhost:8020/api/v1';
-    console.log(body);
     const init = {
-        method: method
+        method: method,
     }
     if (body) {
         init.body = JSON.stringify(body);
@@ -25,8 +24,9 @@ const requestFactory = (method, url, token, body, login, password) => {
     if (login && password)
         init.headers = {
         ...init.headers,
-        'Authorization': 'Bearer ' + Buffer.from(login + ':' + password, 'utf-8').toString('base64')}
-    return fetch(baseUrl + url, init).then(res => res);
+        'Authorization': 'Bearer ' + Buffer.from(login + ':' + password, 'utf-8').toString('base64')
+    }
+    return fetch(baseUrl + url, init);
 }
 
 module.exports = requestFactory;

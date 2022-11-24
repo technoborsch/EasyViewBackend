@@ -3,7 +3,7 @@ const {getPosts} = require("../misc/misc.request");
 const {
     registerUser,
     activate,
-    signin
+    signin,
 } = require("./auth.request");
 
 const userEmail = generateUserEmail();
@@ -56,7 +56,7 @@ test('Try to register the same email again and get an error', async () => {
 
 test('Get access to protected view with received token', async () => {
     const res = await getPosts(accessToken);
-    expect(res.status).toBe(200);
     const returnedData = await res.json();
+    expect(res.status).toBe(200);
     expect(returnedData).not.toHaveProperty('error');
 });
