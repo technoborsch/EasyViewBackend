@@ -16,7 +16,7 @@ const JWTSecret = process.env['JWT_SECRET'];
  */
 const authMiddleware = async (req, res, next) => {
     const authString = req.get('Authorization');
-    if (!authString) {throw new ReqError('Credentials were not provided', 401);}
+    if (!authString) throw new ReqError('Credentials were not provided', 401);
     if (!tokenHeaderValidator(authString)) {
         throw new ReqError('Wrong credentials - "Authorization" header must contain information in format "Token" +' +
             '" " + "{valid JWT token}. Check this header"', 401);
@@ -24,7 +24,7 @@ const authMiddleware = async (req, res, next) => {
     let isValid;
     const JWT = authString.split(" ")[1];
     try {
-        isValid = jwt.verify(JWT, JWTSecret, {algorithm: 'HS512'});
+        isValid = await jwt.verify(JWT, JWTSecret, {algorithm: 'HS512'});
     } catch (err) {
         throw new ReqError('Corrupted token', 401);
     }
@@ -33,7 +33,7 @@ const authMiddleware = async (req, res, next) => {
     }
     let decoded;
     try {
-        decoded = jwt.decode(JWT, {algorithm: 'HS512'});
+        decoded = await jwt.decode(JWT, {algorithm: 'HS512'});
     } catch (err) {
         throw new ReqError('Corrupted token', 401);
     }

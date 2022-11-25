@@ -6,7 +6,7 @@ const requestFactory = require("../../../utils/RequestFactory");
  * @param {string} email Email that a new user should be registered with
  * @returns {Promise<Response>} Promise with response from server
  */
-let registerUser = (email) => requestFactory(
+const registerUser = (email) => requestFactory(
     'post',
     '/signup',
     null,
@@ -26,7 +26,7 @@ let registerUser = (email) => requestFactory(
  * @param {string} [patronymic] User's patronymic
  * @returns {Promise<Response>} Promise with response from server
  */
-let activate = (id, token, name, lastName, password, patronymic) => requestFactory(
+const activate = (id, token, name, lastName, password, patronymic) => requestFactory(
     'post',
     '/activate',
     null,
@@ -47,8 +47,8 @@ let activate = (id, token, name, lastName, password, patronymic) => requestFacto
  * @param password Password of a user
  * @returns {Promise<Response>} Promise with response from server
  */
-let signin = (email, password) => requestFactory(
-    'post',
+const signin = (email, password) => requestFactory(
+    'get',
     '/signin',
     null,
     null,
@@ -56,8 +56,57 @@ let signin = (email, password) => requestFactory(
     password
 );
 
+/**
+ * Request to request sending email to reset a password
+ *
+ * @param {string} email Email of user that needs password reset
+ * @returns {Promise<Response>} Promise with response from server
+ */
+const resetPasswordRequest = (email) => requestFactory(
+    'post',
+    '/resetPassword',
+    null,
+    {
+        email: email
+    }
+);
+
+/**
+ * Request to actually reset password with given token and id
+ *
+ * @param {string} token Token received in email link
+ * @param {string} id Received ID of a user
+ * @param {string} password New password
+ * @returns {Promise<Response>} Promise with response from server
+ */
+const resetPassword = (token, id, password) => requestFactory(
+    'put',
+    '/resetPassword',
+    null,
+    {
+        token: token,
+        id: id,
+        password: password
+    }
+);
+
+/**
+ * Request to refresh token with current token
+ *
+ * @param {string} token Current JWT that needs to be refreshed
+ * @returns {Promise<Response>} Promise with response from server
+ */
+const refreshToken = (token) => requestFactory(
+    'get',
+    '/refreshToken',
+    token,
+);
+
 module.exports = {
     registerUser,
     activate,
     signin,
+    resetPasswordRequest,
+    resetPassword,
+    refreshToken,
 };

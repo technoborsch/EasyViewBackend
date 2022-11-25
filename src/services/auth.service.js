@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 
 const ReqError = require('../utils/ReqError');
-const userView = require('../serializers/user.serializer');
+const userSerializer = require('../serializers/user.serializer');
 const sendEmail = require('../utils/sendEmail');
 
 const JWTSecret = process.env['JWT_SECRET'];
@@ -29,9 +29,11 @@ const signup = async (data) => {
     user = new User(data); //Potentially dangerous, very strict validation of data must be performed
     await user.save();
   } else { //Then it means that we have not active existing user that probably already had a token
-    //If there is already a token for this user, reject request
+    //If there is already a token for this user issued less than a minute ago, reject request
     let token = await Token.findOne({ userId: user._id });
-    if (token) throw new ReqError('You already have a registration token, please use it or try again later', 409)
+    if (Date.now() - token.createdAt < 60 * 1000) { //a minute
+      throw new ReqError('You already have a registration token issued less than a minute ago, please use it or try again later', 409);
+    }
   }
   //Create a token with this user id and random activation string, encrypted with bcrypt
   let activateToken = crypto.randomBytes(32).toString("hex");
@@ -66,7 +68,7 @@ const activate = async (data) => {
   const activationToken = await Token.findOne({userId: data.id});
   //If there is no such token or the token is for another user, reject request
   if (!activationToken) throw new ReqError('Invalid or expired activation token', 401);
-  const isValid = bcrypt.compare(data.token, activationToken.token);
+  const isValid = await bcrypt.compare(data.token, activationToken.token);
   if (!isValid) throw new ReqError('Invalid or expired activation token', 401);
   const user = await User.findById(data.id);
   //If there is no such user in database for some reason, reject request
@@ -86,7 +88,7 @@ const activate = async (data) => {
  *
  * @param {string} email User email
  * @param {string} password User password
- * @returns {Promise<{expiry: number, user: {lastName, patronymic, isModerator, name, id, isAdmin, email}, token: (*)}>}
+ * @returns {Promise<{user: {lastName, patronymic, isModerator, name, id, isAdmin, email}, token: (*)}>}
  */
 const signin = async (email, password) => {
   //If there is no such user in database or the user is inactive, reject
@@ -95,18 +97,16 @@ const signin = async (email, password) => {
     throw new ReqError('Wrong email or password', 401);
   }
   //If passwords don't match, reject request
-  const isPasswordValid = bcrypt.compare(password, user.password);
+  const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new ReqError('Wrong email or password', 401);
   }
   //Create new token that expires in set time
-  const time = Date.now();
-  const token = jwt.sign({ id: user._id }, JWTSecret, {expiresIn: JWTExpiry + 'd'});
+  const token = await jwt.sign({ id: user._id }, JWTSecret, {expiresIn: JWTExpiry + 'd'});
   //Return data about authorized user, created access token and information when it will be expired
   return {
-    user: userView(user),
+    user: userSerializer(user),
     token: token,
-    expiry: time + Number.parseInt(JWTExpiry) * 24 * 60 * 60 * 1000,
   };
 };
 
@@ -156,7 +156,7 @@ const requestPasswordReset = async (email) => {
  */
 const resetPassword = async (userId, token, password) => {
   //If there is no such token, reject request
-  let passwordResetToken = await Token.findOne({ userId });
+  let passwordResetToken = await Token.findOne({ userId: userId });
   if (!passwordResetToken) {
     throw new ReqError("Invalid or expired password reset token", 401);
   }
@@ -165,15 +165,13 @@ const resetPassword = async (userId, token, password) => {
   if (!isValid) {
     throw new ReqError("Invalid or expired password reset token", 401);
   }
-  //Hash new password
-  const hash = await bcrypt.hash(password, Number(bcryptSalt));
   //If there is no such user, reject
-  const user = User.findById(userId);
+  const user = await User.findById(userId);
   if (!user || !user.isActive) {
     throw new ReqError("User does not exist", 404);
   }
   //Set new password to user and save
-  user.password = hash;
+  user.password = password;
   await user.save();
   await passwordResetToken.deleteOne();
   //return info that it was successful
@@ -184,12 +182,11 @@ const resetPassword = async (userId, token, password) => {
  * Service to get new access tokens
  *
  * @param {string} userId User for whom a token must be issued
- * @returns {Promise<{expiry: number, token: string}>} Promise with token and its expiration information
+ * @returns {Promise<{token: string}>} Promise with token and its expiration information
  */
 const refreshToken = async (userId) => {
   return {
     token: await jwt.sign({id: userId}, JWTSecret, {expiresIn: JWTExpiry + 'd'}),
-    expiry: Date.now() + Number.parseInt(JWTExpiry) * 24 * 60 * 60 * 1000,
   };
 };
 
@@ -200,4 +197,4 @@ module.exports = {
   requestPasswordReset,
   resetPassword,
   refreshToken
-}
+};

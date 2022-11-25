@@ -1,4 +1,4 @@
-const {nameValidator} = require('../../validators/fieldValidators');
+const {nameValidator} = require('../../../validators/fieldValidators');
 
 const cases = [
     ['John', true],

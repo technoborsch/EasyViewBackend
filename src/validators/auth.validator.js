@@ -13,6 +13,7 @@ const {
 const {
     bodyValidatorFactory,
     headersValidatorFactory,
+    validateThatBodyIsAbsent,
 } = require("../utils/ValidatorFactory");
 
 /**
@@ -72,11 +73,13 @@ const activateValidator = (req, res, next) => {
  * All signin requests must contain "Authorization" header with content in format:
  * "Bearer" + " " + "base64-encoded string of format (login:password)".
  * Request must not contain body.
- * @param req
- * @param res
- * @param next
+ *
+ * @param req Validated request
+ * @param res Response object
+ * @param next Next function
  */
 const signinValidator = (req, res, next) => {
+    validateThatBodyIsAbsent(req);
     const validateHeaders = headersValidatorFactory(
         [
             ['Authorization', loginHeaderValidator]
@@ -99,9 +102,9 @@ const resetPasswordRequestValidator = signupValidator;
  * "password" attribute with valid password.
  * Any other attribute is not allowed.
  *
- * @param req
- * @param res
- * @param next
+ * @param req Validated request
+ * @param res Response object
+ * @param next Next function
  */
 const resetPasswordValidator = (req, res, next) => {
     const validateBody = bodyValidatorFactory(
@@ -115,10 +118,23 @@ const resetPasswordValidator = (req, res, next) => {
     next();
 };
 
+/**
+ * Function that validates request to refresh token route. A request must not contain a body.
+ *
+ * @param req Validated request
+ * @param res Response object
+ * @param next Next function
+ */
+const refreshTokenValidator = (req, res, next) => {
+    validateThatBodyIsAbsent(req);
+    next();
+}
+
 module.exports = {
     signupValidator,
     activateValidator,
     signinValidator,
     resetPasswordValidator,
-    resetPasswordRequestValidator
+    resetPasswordRequestValidator,
+    refreshTokenValidator,
 };

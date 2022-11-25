@@ -1,14 +1,14 @@
 const {User} = require('../models/user.model')
-const userView = require('../serializers/user.serializer')
+const userSerializer = require('../serializers/user.serializer');
 
 /**
  * Returns trimmed info about given user
  *
  * @param {User} user User that has to be trimmed and returned
- * @returns {Promise<{userView}>} Promise with user information
+ * @returns {Promise<{userSerializer}>} Promise with user information
  */
 const returnSelfService = async (user) => {
-    return userView(user);
+    return userSerializer(user);
 };
 
 /**
@@ -16,7 +16,7 @@ const returnSelfService = async (user) => {
  *
  * @param {Object} data Data with information that has to be changed in given user's profile
  * @param {User} user User whose profile has to be changed
- * @returns {Promise<{userView}>} Promise with updated user's info
+ * @returns {Promise<{userSerializer}>} Promise with updated user's info
  */
 const updateProfile = async (data, user) => {
     if (data.password) {
@@ -32,7 +32,7 @@ const updateProfile = async (data, user) => {
         user.patronymic = data.patronymic;
     }
     const updatedUser = await user.save();
-    return userView(updatedUser);
+    return userSerializer(updatedUser);
 };
 
 /**

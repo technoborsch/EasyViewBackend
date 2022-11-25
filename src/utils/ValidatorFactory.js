@@ -3,9 +3,9 @@ const ReqError = require("./ReqError");
 /**
  * Factory that returns a function to check request body with given attributes, optional attributes and their validators.
  *
- * @param {[[string||function]]} attributes An array of arrays in format: first element is string with an attribute that
+ * @param {[[string, function]]} attributes An array of arrays in format: first element is string with an attribute that
  * must present in body and second element is validation function for this attribute.
- * @param {[[string||function]]} optionalAttributes An array of arrays in format: first element is string with an attribute
+ * @param {[[string, function]]} [optionalAttributes] An array of arrays in format: first element is string with an attribute
  * that can be in request body and second element is validation function for this attribute.
  * @returns {(function(*): void)|*} request body validator for given attributes
  */
@@ -13,6 +13,8 @@ const bodyValidatorFactory = (attributes, optionalAttributes) => {
     return function (req) {
         if (!req.hasOwnProperty('body') || !req.body) throw new ReqError('Request must contain body', 400);
         const data = req.body;
+        const providedNumberOfAttributes = Object.keys(data).length;
+        if (providedNumberOfAttributes === 0) throw new ReqError('No attributes have been provided in request data', 400)
         if (attributes) {
             for (const attr of attributes) {
                 const attribute = attr[0];
@@ -42,7 +44,6 @@ const bodyValidatorFactory = (attributes, optionalAttributes) => {
             }
         }
         const targetNumberOfAttributes = attributes.length + optionalsCounter;
-        const providedNumberOfAttributes = Object.keys(data).length;
         if (targetNumberOfAttributes !== providedNumberOfAttributes) {
             throw new ReqError('Extra data was provided in body request, but it is not allowed', 400);
         }
@@ -72,7 +73,19 @@ const headersValidatorFactory = (headers) => {
     };
 };
 
+/**
+ * A simple function that validates that a request does not have body
+ *
+ * @param {Object} req Request that should be validated
+ */
+const validateThatBodyIsAbsent = (req) => {
+    if (Object.keys(req.body).length > 0) {
+        throw new ReqError('Request body not allowed on this route and method', 400);
+    }
+};
+
 module.exports = {
     bodyValidatorFactory,
-    headersValidatorFactory
+    headersValidatorFactory,
+    validateThatBodyIsAbsent,
 };

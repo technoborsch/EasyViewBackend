@@ -49,7 +49,7 @@ const signInController = async (req, res, next) => {
   const password = credentials[1];
   const signInService = await signin(email, password);
   return res.json(signInService);
-}
+};
 
 /***
  * A controller to manage requests to reset password request URL
@@ -76,7 +76,7 @@ const resetPasswordRequestController = async (req, res, next) => {
  */
 const resetPasswordController = async (req, res, next) => {
   const resetPasswordService = await resetPassword(
-    req.body.userId,
+    req.body.id,
     req.body.token,
     req.body.password,
   );

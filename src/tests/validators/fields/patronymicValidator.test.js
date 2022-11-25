@@ -1,4 +1,4 @@
-const {patronymicValidator} = require('../../validators/fieldValidators');
+const {patronymicValidator} = require('../../../validators/fieldValidators');
 
 const cases = [
     ['Reeee', true],
