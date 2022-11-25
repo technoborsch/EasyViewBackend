@@ -30,8 +30,8 @@ const signup = async (data) => {
     await user.save();
   } else { //Then it means that we have not active existing user that probably already had a token
     //If there is already a token for this user issued less than a minute ago, reject request
-    let token = await Token.findOne({ userId: user._id });
-    if (Date.now() - token.createdAt < 60 * 1000) { //a minute
+    let token = await Token.findOne({ userId: user._id, forReset: false });
+    if (token && Date.now() - token.createdAt < 60 * 1000) { //a minute
       throw new ReqError('You already have a registration token issued less than a minute ago, please use it or try again later', 409);
     }
   }
@@ -65,7 +65,7 @@ const signup = async (data) => {
  * @returns {Promise<{success: boolean}>} Promise that contains information about whether activation was successful
  */
 const activate = async (data) => {
-  const activationToken = await Token.findOne({userId: data.id});
+  const activationToken = await Token.findOne({userId: data.id, forReset: false});
   //If there is no such token or the token is for another user, reject request
   if (!activationToken) throw new ReqError('Invalid or expired activation token', 401);
   const isValid = await bcrypt.compare(data.token, activationToken.token);
@@ -118,11 +118,13 @@ const signin = async (email, password) => {
  */
 const requestPasswordReset = async (email) => {
   //If there is no such user or the user is inactive, reject request
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email });
   if (!user || !user.isActive) throw new ReqError("User does not exist", 404);
   //If there is already token for this user, delete it
-  let token = await Token.findOne({ userId: user._id });
-  if (token) await token.deleteOne();
+  let token = await Token.findOne({ userId: user._id, forReset: true });
+  if (token && Date.now() - token.createdAt < 60 * 1000 ) { // Existing token created less than a minute ago
+    throw new ReqError('You have already requested password reset earlier, try again later', 409);
+  }
   //Create new token
   let resetToken = crypto.randomBytes(32).toString("hex");
   const hash = await bcrypt.hash(resetToken, Number(bcryptSalt));
@@ -130,6 +132,7 @@ const requestPasswordReset = async (email) => {
     userId: user._id,
     token: hash,
     createdAt: Date.now(),
+    forReset: true,
   }).save();
   //Generate link to change password and send message to user's email
   const link = frontendUrl + '/reset_password' + '?' + `token=${resetToken}` + '&' + `id=${user._id}`
@@ -156,9 +159,9 @@ const requestPasswordReset = async (email) => {
  */
 const resetPassword = async (userId, token, password) => {
   //If there is no such token, reject request
-  let passwordResetToken = await Token.findOne({ userId: userId });
+  let passwordResetToken = await Token.findOne({ userId: userId, forReset: true });
   if (!passwordResetToken) {
-    throw new ReqError("Invalid or expired password reset token", 401);
+    throw new ReqError("Invalid, non-existent or expired password reset token", 401);
   }
   //If provided token doesn't match saved one, reject
   const isValid = await bcrypt.compare(token, passwordResetToken.token);

@@ -1,4 +1,5 @@
-const {User} = require('../models/user.model')
+const User = require('../models/user.model');
+const Token = require('../models/token.model');
 const userSerializer = require('../serializers/user.serializer');
 
 /**
@@ -36,14 +37,17 @@ const updateProfile = async (data, user) => {
 };
 
 /**
- * Service to delete user profile (actually just change it's isActive property)
+ * Service to delete user profile (actually just change its isActive property)
  *
  * @param {User} user User that has to be deleted
  * @returns {Promise<{success: boolean}>} Promise with info whether deletion has been successful
  */
 const deleteProfile = async(user) => {
+    //No logic to check if user exists and is active because it has been already checked during authentication
     user.isActive = false;
     await user.save();
+    //Delete all issued tokens
+    await Token.deleteMany({userId: user._id});
     return {success: true}
 };
 

@@ -9,6 +9,7 @@ const {
     resetPassword,
     refreshToken,
 } = require("./auth.request");
+const {deleteProfile} = require("../user/user.request");
 
 const userEmail = generateUserEmail();
 let password = 'superstrongpassword';
@@ -35,6 +36,13 @@ test('Register new user and retrieve an activation token', async () => {
     id = data[1];
 });
 
+test('Try to reset password while account is not already active', async () => {
+    const res = await resetPasswordRequest(userEmail);
+    const receivedData = await res.json();
+    expect(res.status).toBe(404);
+    expect(receivedData).toHaveProperty('error');
+});
+
 test("Try to register the same email while previous account hasn't been activated", async () => {
     const res = await registerUser(userEmail);
     const returnedData = await res.json();
@@ -49,7 +57,7 @@ test('Activate new user', async () => {
     expect(returnedData).toHaveProperty('success', true);
 });
 
-test('Try to signin with another rassword and be furiously rejected', async () => {
+test('Try to signin with another password and be furiously rejected', async () => {
     const res = await signin(userEmail, 'Someanotherrandompassword');
     const returnedData = await res.json();
     expect(res.status).toBe(401);
@@ -91,6 +99,14 @@ test('User forgot a password and asks for reset, receive resetting letter', asyn
     expect(newlyReceivedId).toBe(id);
 });
 
+test('Try to reset password again and be rejected because too early', async () => {
+    const res = await resetPasswordRequest(userEmail);
+    const receivedData = await res.json();
+    expect(res.status).toBe(409);
+    expect(receivedData).toHaveProperty('error');
+});
+
+
 const anotherNewPassword = 'newpasswordiwillneverforget';
 
 test('Not to be able to login with new password', async () => {
@@ -122,9 +138,49 @@ test('Refresh token', async () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const res = await refreshToken(accessToken);
     const receivedData = await res.json();
-    console.log(accessToken);
-    console.log(receivedData.token);
     expect(res.status).toBe(200);
     expect(receivedData).toHaveProperty('token');
     expect(receivedData.token).not.toBe(accessToken);
+});
+
+test('Request password reset and receive token again', async () => {
+    await resetPasswordRequest(userEmail);
+    const data = await extractDataFromEmailLink(userEmail);
+    resetToken = data[0];
+    newlyReceivedId = data[1];
+    expect(resetToken).toBeTruthy();
+    expect(newlyReceivedId).toBe(id);
+});
+
+test('Delete account (actually deactivate)', async () => {
+    const res = await deleteProfile(accessToken);
+    const receivedData = await res.json();
+    expect(res.status).toBe(200);
+    expect(receivedData).toHaveProperty('success', true);
+});
+
+test('Register and get registration info again', async () => {
+    const res = await registerUser(userEmail);
+    const receivedData = await res.json();
+    const data = await extractDataFromEmailLink(userEmail);
+    activationToken = data[0];
+    const newId = data[1];
+    expect(res.status).toBe(200);
+    expect(receivedData).toHaveProperty('success', true);
+    expect(activationToken).toBeTruthy();
+    expect(newId).toBe(id);
+});
+
+test('Activate again', async () => {
+    const res = await activate(id, activationToken, name, lastName, password, 'Petrovich');
+    const receivedData = await res.json();
+    expect(res.status).toBe(200);
+    expect(receivedData).toHaveProperty('success', true);
+});
+
+test('Not to be able to reset password using token issued before deletion', async () => {
+    const res = await resetPassword(resetToken, id, "Somenewpassword");
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
 });

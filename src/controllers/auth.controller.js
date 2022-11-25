@@ -94,7 +94,7 @@ const resetPasswordController = async (req, res, next) => {
 const refreshTokenController = async (req, res, next) => {
   const refreshTokenService = await refreshToken(req.user._id);
   return res.json(refreshTokenService);
-}
+};
 
 module.exports = {
   signUpController,
