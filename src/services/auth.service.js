@@ -7,11 +7,13 @@ const bcrypt = require("bcrypt");
 const ReqError = require('../utils/ReqError');
 const userSerializer = require('../serializers/user.serializer');
 const sendEmail = require('../utils/sendEmail');
+const redis = require('../utils/RedisClient');
 
 const JWTSecret = process.env['JWT_SECRET'];
 const bcryptSalt = process.env['BCRYPT_SALT'];
 const frontendUrl = process.env['FRONTEND_URL'];
-const JWTExpiry = process.env['JWT_EXPIRY'];
+const refreshJWTExpiry = process.env['REFRESH_JWT_EXPIRY']; //in days
+const accessJWTExpiry = process.env['ACCESS_JWT_EXPIRY']; //in minutes
 
 /**
  * A service used to sign up a user with given data
@@ -84,7 +86,8 @@ const activate = async (data) => {
 };
 
 /**
- * Login service, used to check if credentials are valid and, if they are, return information about user and access token
+ * Login service, used to check if credentials are valid and, if they are, return information about user and
+ * access/refresh token pair
  *
  * @param {string} email User email
  * @param {string} password User password
@@ -101,12 +104,24 @@ const signin = async (email, password) => {
   if (!isPasswordValid) {
     throw new ReqError('Wrong email or password', 401);
   }
-  //Create new token that expires in set time
-  const token = await jwt.sign({ id: user._id }, JWTSecret, {expiresIn: JWTExpiry + 'd'});
-  //Return data about authorized user, created access token and information when it will be expired
+  //Create new token pair that expires in set time
+  const accessToken = await jwt.sign(
+      { id: user._id },
+      JWTSecret,
+      {expiresIn: accessJWTExpiry + 'm'}
+  );
+  const refreshToken = await jwt.sign(
+      {id: user._id, refresh: true},
+      JWTSecret,
+      {expiresIn: refreshJWTExpiry + 'd'}
+  );
+  //Set this refresh token as current for this user in redis
+  await redis.set(`refresh_token_${user._id}`, refreshToken);
+  //Return data about authorized user, created access and refresh tokens
   return {
     user: userSerializer(user),
-    token: token,
+    accessToken: accessToken,
+    refreshToken: refreshToken,
   };
 };
 
@@ -185,11 +200,25 @@ const resetPassword = async (userId, token, password) => {
  * Service to get new access tokens
  *
  * @param {string} userId User for whom a token must be issued
- * @returns {Promise<{token: string}>} Promise with token and its expiration information
+ * @param {string} previousRefreshToken Token that is being used
+ * @returns {Promise<{accessToken: string, refreshToken: string}>} Promise with token pair
  */
-const refreshToken = async (userId) => {
+const refreshToken = async (userId, previousRefreshToken) => {
+  const accessToken = await jwt.sign(
+      { id: userId },
+      JWTSecret,
+      {expiresIn: accessJWTExpiry + 'm'}
+  );
+  const refreshToken = await jwt.sign(
+      {id: userId, refresh: true},
+      JWTSecret,
+      {expiresIn: refreshJWTExpiry + 'd'}
+  );
+  await redis.set(`bl_${previousRefreshToken}`, previousRefreshToken);
+  await redis.set(`refresh_token_${userId}`, refreshToken);
   return {
-    token: await jwt.sign({id: userId}, JWTSecret, {expiresIn: JWTExpiry + 'd'}),
+    accessToken: accessToken,
+    refreshToken: refreshToken
   };
 };
 

@@ -32,9 +32,11 @@ test('Try to get my profile as not logged user and be rejected', async () => {
 let accessToken;
 
 test('Retrieve an access token', async () => {
-    const receivedAccessToken = await registerActivateAndLogin(email, name, lastName, password, patronymic);
-    expect(receivedAccessToken).toBeTruthy();
-    accessToken = receivedAccessToken;
+    const data = await registerActivateAndLogin(email, name, lastName, password, patronymic);
+    expect(data).toHaveProperty('user');
+    expect(data).toHaveProperty('accessToken');
+    expect(data).toHaveProperty('refreshToken');
+    accessToken = data.accessToken;
 });
 
 test('Retrieve data about myself', async () => {
@@ -72,7 +74,8 @@ test('Check that user is able to login with new password', async () => {
     const resData = await res.json();
     expect(res.status).toBe(200);
     expect(resData).toHaveProperty('user');
-    expect(resData).toHaveProperty('token');
+    expect(resData).toHaveProperty('accessToken');
+    expect(resData).toHaveProperty('refreshToken');
 });
 
 test('Check that user is not able to login with old password', async () => {

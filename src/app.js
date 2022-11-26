@@ -14,8 +14,6 @@ const dbPassword = process.env['DB_PASSWORD'];
 const dbHost = process.env['DB_HOST'];
 const dbPort = process.env['DB_PORT'];
 const dbDatabase = process.env['DB_DATABASE'];
-const redisHost = process.env['REDIS_HOST'];
-const redisPort = process.env['REDIS_PORT'];
 const adminURL = process.env['ADMIN_URL'];
 const adminUser = process.env['ADMIN_USER'];
 const adminPassword = process.env['ADMIN_PASSWORD'];
@@ -23,6 +21,8 @@ const adminPassword = process.env['ADMIN_PASSWORD'];
 const postRoutes = require('./routes/post.route');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
+
+const redisClient = require('./utils/RedisClient');
 
 const app = express();
 const port = 8080;
@@ -55,10 +55,6 @@ mongoose.connect(
 	`mongodb://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${dbDatabase}`,
 	{ useNewUrlParser: true }
 ).then(() => {
-	const redisClient = redis.createClient({
-		url: `redis://${redisHost}:${redisPort}`,
-	});
-	redisClient.on('error', (err) => {console.log('Redis error: ', err)});
 	redisClient.connect(
 	).then(() => {
 		app.listen(port, () => {

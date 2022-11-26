@@ -16,6 +16,7 @@ let password = 'superstrongpassword';
 let name = 'John';
 let lastName = 'Wick';
 let accessToken;
+let refreshingToken
 let activationToken;
 let id;
 
@@ -82,13 +83,15 @@ test('Try to signin with another password and be furiously rejected', async () =
     expect(returnedData).toHaveProperty('error');
 });
 
-test('Signin and get access token and user data', async () => {
+test('Signin and get access token, refresh token and user data', async () => {
     const res = await signin(userEmail, password);
     const returnedData = await res.json();
     expect(res.status).toBe(200);
     expect(returnedData).toHaveProperty('user');
-    expect(returnedData).toHaveProperty('token');
-    accessToken = returnedData.token;
+    expect(returnedData).toHaveProperty('accessToken');
+    expect(returnedData).toHaveProperty('refreshToken');
+    accessToken = returnedData.accessToken;
+    refreshingToken = returnedData.refreshToken;
 });
 
 test('Try to register the same email again and get an error', async () => {
@@ -124,7 +127,6 @@ test('Try to reset password again and be rejected because too early', async () =
     expect(receivedData).toHaveProperty('error');
 });
 
-
 const anotherNewPassword = 'newpasswordiwillneverforget';
 
 test('Not to be able to login with new password', async () => {
@@ -146,7 +148,8 @@ test('Be able to login with new password', async () => {
     const receivedData = await res.json();
     expect(res.status).toBe(200);
     expect(receivedData).toHaveProperty('user');
-    expect(receivedData).toHaveProperty('token');
+    expect(receivedData).toHaveProperty('accessToken');
+    expect(receivedData).toHaveProperty('refreshToken');
     expect(receivedData.token).not.toBe(accessToken);
     accessToken = receivedData.token;
 });
@@ -159,13 +162,15 @@ test('Not to be able to login with old password', async () => {
 });
 
 test('Refresh token', async () => {
-    //Wait for a while to receive slightly different JWT
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const res = await refreshToken(accessToken);
+    const res = await refreshToken(refreshingToken);
     const receivedData = await res.json();
     expect(res.status).toBe(200);
-    expect(receivedData).toHaveProperty('token');
-    expect(receivedData.token).not.toBe(accessToken);
+    expect(receivedData).toHaveProperty('accessToken');
+    expect(receivedData).toHaveProperty('refreshToken');
+    expect(receivedData.accessToken).not.toBe(accessToken);
+    expect(receivedData.refreshToken).not.toBe(refreshingToken);
+    accessToken = receivedData.accessToken;
+    refreshingToken = receivedData.refreshToken;
 });
 
 test('Request password reset and receive token again', async () => {

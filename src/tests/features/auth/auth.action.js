@@ -13,7 +13,7 @@ const extractDataFromEmailLink = require("../../../utils/ExtractDataFromEmailLin
  * @param {string} lastName User's lastname
  * @param {string} password User's password
  * @param {string} [patronymic] User's patronymic
- * @returns {Promise<string>} Promise with access token
+ * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>} Promise with access token
  */
 const registerActivateAndLogin = async (email, name, lastName, password, patronymic) => {
     await registerUser(email);
@@ -21,8 +21,7 @@ const registerActivateAndLogin = async (email, name, lastName, password, patrony
     const token = data[0];
     const id = data[1];
     await performActivation(id, token, name, lastName, password, patronymic);
-    const userAndToken = await performLogin(email, password);
-    return userAndToken.token;
+    return await performLogin(email, password);
 };
 
 /***

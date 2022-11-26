@@ -92,7 +92,7 @@ const resetPasswordController = async (req, res, next) => {
  * @returns {Promise<Object>}
  */
 const refreshTokenController = async (req, res, next) => {
-  const refreshTokenService = await refreshToken(req.user._id);
+  const refreshTokenService = await refreshToken(req.user._id, req.token);
   return res.json(refreshTokenService);
 };
 

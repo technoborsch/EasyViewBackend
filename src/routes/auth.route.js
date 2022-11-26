@@ -6,7 +6,7 @@ const {
     resetPasswordRequestController,
     resetPasswordController, refreshTokenController
 } = require("../controllers/auth.controller");
-const {auth} = require("../middleware/auth.middleware");
+const {refreshAuth} = require("../middleware/auth.middleware");
 const {
     signupValidator,
     activateValidator,
@@ -29,6 +29,6 @@ router.post('/resetPassword', resetPasswordRequestValidator, resetPasswordReques
 //Route used to confirm password resetting
 router.put('/resetPassword', resetPasswordValidator, resetPasswordController);
 //Route used to refresh token
-router.get('/refreshToken', auth, refreshTokenValidator, refreshTokenController);
+router.get('/refreshToken', refreshTokenValidator, refreshAuth, refreshTokenController);
 
 module.exports = router;

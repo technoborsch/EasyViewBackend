@@ -15,6 +15,52 @@ const JWTSecret = process.env['JWT_SECRET'];
  * @returns {Promise<void>} Void promise because async function
  */
 const authMiddleware = async (req, res, next) => {
+    const info = await checkAndDecodeAttachedToken(req);
+    const decoded = info.decoded;
+    if (decoded.hasOwnProperty('refresh')) {
+        throw new ReqError('You have attached a refresh token, please provide valid access token instead', 400);
+    }
+    const user = await User.findOne({_id: decoded.id});
+    if (!user || !user.isActive) {
+        throw new ReqError('Trying to access data as non-existent user', 401);
+    }
+    req.user = user;
+    next();
+}
+
+/***
+ * Authentication middleware that checks if correct refresh token has been provided, user exists and active
+ * and attaches authorized user and used refresh token to request.
+ *
+ * @param req Request that should be authorized
+ * @param res Response object
+ * @param next Next function
+ * @returns {Promise<void>} Void promise because async function
+ */
+const refreshAuthMiddleware = async (req, res, next) => {
+    const info = await checkAndDecodeAttachedToken(req);
+    const decoded = info.decoded;
+    const token = info.token;
+    if (!decoded.hasOwnProperty('refresh')) {
+        throw new ReqError('You have attached an access token, please provide valid refresh token instead', 400);
+    }
+    const user = await User.findOne({_id: decoded.id});
+    if (!user || !user.isActive) {
+        throw new ReqError('Trying to access data as non-existent user', 401);
+    }
+    req.user = user;
+    req.token = token;
+    next();
+}
+
+/**
+ * Function used to validate if correct auth headers were provided in request to protected route
+ *
+ * @param req Request object
+ * @returns {Promise<{decoded: ({payload: *, signature: *, header: *}|*), token: string}>} Promise with decoded token
+ * info and token itself
+ */
+const checkAndDecodeAttachedToken = async (req) => {
     const authString = req.get('Authorization');
     if (!authString) throw new ReqError('Credentials were not provided', 401);
     if (!tokenHeaderValidator(authString)) {
@@ -37,12 +83,10 @@ const authMiddleware = async (req, res, next) => {
     } catch (err) {
         throw new ReqError('Corrupted token', 401);
     }
-    const user = await User.findOne({_id: decoded.id});
-    if (!user || !user.isActive) {
-        throw new ReqError('Trying to access data as non-existent user', 401);
-    }
-    req.user = user;
-    next();
-}
+    return { decoded: decoded, token: JWT };
+};
 
-module.exports = { auth: authMiddleware }
+module.exports = {
+    auth: authMiddleware,
+    refreshAuth: refreshAuthMiddleware
+};
