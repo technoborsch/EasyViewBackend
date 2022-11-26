@@ -50,6 +50,24 @@ test("Try to register the same email while previous account hasn't been activate
     expect(returnedData).toHaveProperty('error');
 });
 
+const someRandomValidActivationToken = '1a374cf0bf7ed91d0afef40c6a58616292d946016eae948dc9a5cc535c2fb929';
+
+test('Try to activate an account with valid but wrong token', async () => {
+    const res = await activate(id, someRandomValidActivationToken, name, lastName, password);
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
+});
+
+const someRandomID = '6380890a09b31d5e01f1fe50';
+
+test('Try to activate an account with valid token but another ID', async () => {
+    const res = await activate(someRandomID, activationToken, name, lastName, password);
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
+});
+
 test('Activate new user', async () => {
     const res = await activate(id, activationToken, name, lastName, password);
     const returnedData = await res.json();
@@ -131,6 +149,13 @@ test('Be able to login with new password', async () => {
     expect(receivedData).toHaveProperty('token');
     expect(receivedData.token).not.toBe(accessToken);
     accessToken = receivedData.token;
+});
+
+test('Not to be able to login with old password', async () => {
+    const res = await signin(userEmail, password);
+    const returnedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(returnedData).toHaveProperty('error');
 });
 
 test('Refresh token', async () => {

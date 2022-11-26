@@ -1,6 +1,7 @@
 require('express-async-errors');
 const express = require('express');
 const mongoose = require('mongoose');
+const redis = require('redis');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -13,6 +14,8 @@ const dbPassword = process.env['DB_PASSWORD'];
 const dbHost = process.env['DB_HOST'];
 const dbPort = process.env['DB_PORT'];
 const dbDatabase = process.env['DB_DATABASE'];
+const redisHost = process.env['REDIS_HOST'];
+const redisPort = process.env['REDIS_PORT'];
 const adminURL = process.env['ADMIN_URL'];
 const adminUser = process.env['ADMIN_USER'];
 const adminPassword = process.env['ADMIN_PASSWORD'];
@@ -50,13 +53,16 @@ app.use((error, req, res, next) => {
 
 mongoose.connect(
 	`mongodb://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${dbDatabase}`,
-	{
-		useNewUrlParser: true
-	}
+	{ useNewUrlParser: true }
 ).then(() => {
-app.listen(port, ()=>{
-		console.log(`Start listening on port ${port}`);
+	const redisClient = redis.createClient({
+		url: `redis://${redisHost}:${redisPort}`,
+	});
+	redisClient.on('error', (err) => {console.log('Redis error: ', err)});
+	redisClient.connect(
+	).then(() => {
+		app.listen(port, () => {
+			console.log(`Start listening on port ${port}`);
+		});
 	});
 });
-
-module.exports = app;

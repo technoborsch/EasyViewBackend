@@ -24,6 +24,7 @@
     "morgan": "^1.10.0",
     "node-html-parser": "^6.1.4",
     "nodemailer": "^6.8.0",
+    "redis": "^4.5.1",
     "sriracha": "^1.0.0",
     "validator": "^13.7.0"
   },

@@ -67,12 +67,19 @@ test('Update profile and see changes', async () => {
     expect(userData).not.toHaveProperty('_v');
 });
 
-test('Check if user is able to login with new password', async () => {
+test('Check that user is able to login with new password', async () => {
     const res = await signin(email, newPassword);
     const resData = await res.json();
     expect(res.status).toBe(200);
     expect(resData).toHaveProperty('user');
     expect(resData).toHaveProperty('token');
+});
+
+test('Check that user is not able to login with old password', async () => {
+    const res = await signin(email, password);
+    const resData = await res.json();
+    expect(res.status).toBe(401);
+    expect(resData).toHaveProperty('error');
 });
 
 test('Delete profile', async () => {

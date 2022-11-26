@@ -1,6 +1,12 @@
 version: "3.9"
 
 services:
+  redis:
+    image: bitnami/redis
+    volumes:
+      - ./redis-volume:/bitnami/redis/data
+    env_file:
+      - ./envfiles/redis.env
   mail:
     image: mailhog/mailhog
     container_name: mailhog
@@ -10,9 +16,9 @@ services:
     image: mongo
     container_name: mongodb
     env_file:
-      - db.env
+      - envfiles/db.env
     volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - ./envfiles/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - ./mongo-volume:/data/db
   sftp:
     image: atmoz/sftp
@@ -29,4 +35,4 @@ services:
       - db
       - sftp
     env_file:
-      - api.env
+      - envfiles/api.env

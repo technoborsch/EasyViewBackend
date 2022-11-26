@@ -1,14 +1,12 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 #Sensitive information
-init-mongo.js
-db.env
-api.env
-mail.env
+/envfiles
 
 #Docker-compose mounted volumes
 /mongo-volume
 /sftp
+/redis-volume
 
 #IDE files
 /.idea
