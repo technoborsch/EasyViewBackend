@@ -16,7 +16,7 @@ let password = 'superstrongpassword';
 let name = 'John';
 let lastName = 'Wick';
 let accessToken;
-let refreshingToken
+let refreshingToken;
 let activationToken;
 let id;
 
@@ -108,6 +108,13 @@ test('Get access to protected view with received token', async () => {
     expect(returnedData).not.toHaveProperty('error');
 });
 
+test('Try to get access to protected view with received refresh token and be rejected', async () => {
+    const res = await getPosts(refreshingToken);
+    const returnedData = await res.json();
+    expect(res.status).toBe(400);
+    expect(returnedData).toHaveProperty('error');
+});
+
 let resetToken;
 let newlyReceivedId;
 
@@ -161,6 +168,8 @@ test('Not to be able to login with old password', async () => {
     expect(returnedData).toHaveProperty('error');
 });
 
+let newRefreshingToken;
+
 test('Refresh token', async () => {
     const res = await refreshToken(refreshingToken);
     const receivedData = await res.json();
@@ -170,7 +179,15 @@ test('Refresh token', async () => {
     expect(receivedData.accessToken).not.toBe(accessToken);
     expect(receivedData.refreshToken).not.toBe(refreshingToken);
     accessToken = receivedData.accessToken;
-    refreshingToken = receivedData.refreshToken;
+    newRefreshingToken = receivedData.refreshToken;
+});
+
+test('Not to be able to use previous refresh token', async () => {
+    const res = await refreshToken(refreshingToken);
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
+    refreshingToken = newRefreshingToken;
 });
 
 test('Request password reset and receive token again', async () => {

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user.model')
 const ReqError = require("../utils/ReqError");
 const {tokenHeaderValidator} = require("../validators/fieldValidators");
+const redis = require('../utils/RedisClient');
 
 const JWTSecret = process.env['JWT_SECRET'];
 
@@ -41,6 +42,10 @@ const refreshAuthMiddleware = async (req, res, next) => {
     const info = await checkAndDecodeAttachedToken(req);
     const decoded = info.decoded;
     const token = info.token;
+    const blacklisted = await redis.get(`bl_${token}`);
+    if (blacklisted) {
+        throw new ReqError('This token has already been used, you need another one', 401);
+    }
     if (!decoded.hasOwnProperty('refresh')) {
         throw new ReqError('You have attached an access token, please provide valid refresh token instead', 400);
     }
