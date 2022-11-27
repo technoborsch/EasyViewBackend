@@ -42,7 +42,7 @@ const refreshAuthMiddleware = async (req, res, next) => {
     const info = await checkAndDecodeAttachedToken(req);
     const decoded = info.decoded;
     const token = info.token;
-    const blacklisted = await redis.get(`bl_${token}`);
+    const blacklisted = await redis.getBlacklistedToken(token);
     if (blacklisted) {
         throw new ReqError('This token has already been used, you need another one', 401);
     }

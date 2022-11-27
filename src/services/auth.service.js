@@ -115,8 +115,13 @@ const signin = async (email, password) => {
       JWTSecret,
       {expiresIn: refreshJWTExpiry + 'd'}
   );
+  //If exists, blacklist previous refresh token
+  const previousRefreshToken = await redis.getActualTokenOfUser(user._id);
+  if (previousRefreshToken) {
+    await redis.addTokenToBlackList(previousRefreshToken);
+  }
   //Set this refresh token as current for this user in redis
-  await redis.set(`refresh_token_${user._id}`, refreshToken);
+  await redis.setTokenToUser(user._id, refreshToken);
   //Return data about authorized user, created access and refresh tokens
   return {
     user: userSerializer(user),
@@ -214,15 +219,9 @@ const refreshToken = async (userId, previousRefreshToken) => {
       JWTSecret,
       {expiresIn: refreshJWTExpiry + 'd'}
   );
-  //Add token to blacklist and assign token to user
-  const blacklistKey = `bl_${previousRefreshToken}`;
-  //Key in redis should expire with token, because if the token is expired then it is useless
-  const expireAt = Date.now() * 1000 + Number.parseInt(refreshJWTExpiry) * 24 * 60 * 60;
-  await redis.set(blacklistKey, 1);
-  await redis.expireAt(blacklistKey, expireAt);
-  const tokenUserKey = `refresh_token_${userId}`;
-  await redis.set(tokenUserKey, refreshToken);
-  await redis.expireAt(tokenUserKey, expireAt);
+  //Add old token to blacklist and assign token to user
+  await redis.addTokenToBlackList(previousRefreshToken);
+  await redis.setTokenToUser(userId, refreshToken);
   return {
     accessToken: accessToken,
     refreshToken: refreshToken,

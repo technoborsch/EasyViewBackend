@@ -157,8 +157,10 @@ test('Be able to login with new password', async () => {
     expect(receivedData).toHaveProperty('user');
     expect(receivedData).toHaveProperty('accessToken');
     expect(receivedData).toHaveProperty('refreshToken');
-    expect(receivedData.token).not.toBe(accessToken);
-    accessToken = receivedData.token;
+    expect(receivedData.accessToken).not.toBe(accessToken);
+    expect(receivedData.refreshToken).not.toBe(refreshingToken);
+    accessToken = receivedData.accessToken;
+    refreshingToken = receivedData.refreshToken;
 });
 
 test('Not to be able to login with old password', async () => {
@@ -176,8 +178,6 @@ test('Refresh token', async () => {
     expect(res.status).toBe(200);
     expect(receivedData).toHaveProperty('accessToken');
     expect(receivedData).toHaveProperty('refreshToken');
-    expect(receivedData.accessToken).not.toBe(accessToken);
-    expect(receivedData.refreshToken).not.toBe(refreshingToken);
     accessToken = receivedData.accessToken;
     newRefreshingToken = receivedData.refreshToken;
 });
