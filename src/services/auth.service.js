@@ -131,6 +131,20 @@ const signin = async (email, password) => {
 };
 
 /**
+ * Log out service, blacklists user's current tokens
+ *
+ * @param {string} userId User that logs out
+ * @param {string} accessToken User's current access token
+ * @returns {Promise<Object<{success: boolean}>>} Promise with message that logout was successful
+ */
+const logOut = async (userId, accessToken) => {
+  const currentRefreshToken = await redis.getActualTokenOfUser(userId);
+  await redis.addTokenToBlackList(currentRefreshToken);
+  await redis.addTokenToBlackList(accessToken);
+  return {success: true}
+};
+
+/**
  * Service to process password reset requests
  *
  * @param {string} email Email of user whose password should be reset
@@ -232,6 +246,7 @@ module.exports = {
   signup,
   activate,
   signin,
+  logOut,
   requestPasswordReset,
   resetPassword,
   refreshToken

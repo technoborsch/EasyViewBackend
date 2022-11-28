@@ -2,6 +2,7 @@ const {
   signup,
   activate,
   signin,
+  logOut,
   requestPasswordReset,
   resetPassword,
   refreshToken,
@@ -49,6 +50,19 @@ const signInController = async (req, res, next) => {
   const password = credentials[1];
   const signInService = await signin(email, password);
   return res.json(signInService);
+};
+
+/**
+ * A controller to manage logging out of current session
+ *
+ * @param req Request object
+ * @param res Response object
+ * @param next Next function
+ * @returns {Promise<Object>}
+ */
+const logOutController = async (req, res, next) => {
+  const logOutService = await logOut(req.user._id, req.token);
+  return res.json(logOutService);
 };
 
 /***
@@ -100,6 +114,7 @@ module.exports = {
   signUpController,
   activateUserController,
   signInController,
+  logOutController,
   resetPasswordRequestController,
   resetPasswordController,
   refreshTokenController,

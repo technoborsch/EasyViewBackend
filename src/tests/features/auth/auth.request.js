@@ -57,6 +57,18 @@ const signin = (email, password) => requestFactory(
 );
 
 /**
+ * Request to logout
+ *
+ * @param {string} token Valid access token
+ * @returns {Promise<Response>} Promise with response from server
+ */
+const logout = (token) => requestFactory(
+    'get',
+    '/logout',
+    token,
+);
+
+/**
  * Request to request sending email to reset a password
  *
  * @param {string} email Email of user that needs password reset
@@ -106,6 +118,7 @@ module.exports = {
     registerUser,
     activate,
     signin,
+    logout,
     resetPasswordRequest,
     resetPassword,
     refreshToken,

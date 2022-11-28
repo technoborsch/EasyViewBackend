@@ -128,12 +128,18 @@ const resetPasswordValidator = (req, res, next) => {
 const refreshTokenValidator = (req, res, next) => {
     validateThatBodyIsAbsent(req);
     next();
-}
+};
+
+/**
+ * Log out validator is the same as refresh token validator - request must not contain body
+ */
+const logOutValidator = refreshTokenValidator;
 
 module.exports = {
     signupValidator,
     activateValidator,
     signinValidator,
+    logOutValidator,
     resetPasswordValidator,
     resetPasswordRequestValidator,
     refreshTokenValidator,

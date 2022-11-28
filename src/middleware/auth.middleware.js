@@ -18,14 +18,17 @@ const JWTSecret = process.env['JWT_SECRET'];
 const authMiddleware = async (req, res, next) => {
     const info = await checkAndDecodeAttachedToken(req);
     const decoded = info.decoded;
+    const token = info.token;
+    const blacklisted = await redis.getBlacklistedToken(token);
+    console.log(blacklisted)
+    if (blacklisted) {
+        throw new ReqError('This token has been blacklisted, please refresh or login', 401);
+    }
     if (decoded.hasOwnProperty('refresh')) {
         throw new ReqError('You have attached a refresh token, please provide valid access token instead', 400);
     }
-    const user = await User.findOne({_id: decoded.id});
-    if (!user || !user.isActive) {
-        throw new ReqError('Trying to access data as non-existent user', 401);
-    }
-    req.user = user;
+    req.user = await checkIfUserExists(decoded.id);
+    req.token = token;
     next();
 }
 
@@ -49,11 +52,7 @@ const refreshAuthMiddleware = async (req, res, next) => {
     if (!decoded.hasOwnProperty('refresh')) {
         throw new ReqError('You have attached an access token, please provide valid refresh token instead', 400);
     }
-    const user = await User.findOne({_id: decoded.id});
-    if (!user || !user.isActive) {
-        throw new ReqError('Trying to access data as non-existent user', 401);
-    }
-    req.user = user;
+    req.user = await checkIfUserExists(decoded.id);
     req.token = token;
     next();
 }
@@ -89,6 +88,20 @@ const checkAndDecodeAttachedToken = async (req) => {
         throw new ReqError('Corrupted token', 401);
     }
     return { decoded: decoded, token: JWT };
+};
+
+/**
+ * Checks if user exists and active, returns user if he does and throws an error if he doesn't
+ *
+ * @param {string} userId User whose existence in database should be checked
+ * @returns {Promise<Object>} Promise with user if he exists
+ */
+const checkIfUserExists = async (userId) => {
+    const user = await User.findOne({_id: userId});
+    if (!user || !user.isActive) {
+        throw new ReqError('Trying to access data as non-existent user', 401);
+    }
+    return user;
 };
 
 module.exports = {

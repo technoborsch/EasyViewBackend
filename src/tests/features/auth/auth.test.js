@@ -5,6 +5,7 @@ const {
     registerUser,
     activate,
     signin,
+    logout,
     resetPasswordRequest,
     resetPassword,
     refreshToken,
@@ -227,6 +228,27 @@ test('Activate again', async () => {
 
 test('Not to be able to reset password using token issued before deletion', async () => {
     const res = await resetPassword(resetToken, id, "Somenewpassword");
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
+});
+
+test('Logout from current session', async () => {
+    const res = await logout(accessToken);
+    const receivedData = await res.json();
+    expect(res.status).toBe(200);
+    expect(receivedData).toHaveProperty('success', true);
+});
+
+test('Now access token should not work', async () => {
+    const res = await getPosts(accessToken);
+    const receivedData = await res.json();
+    expect(res.status).toBe(401);
+    expect(receivedData).toHaveProperty('error');
+});
+
+test('Refresh token also must not work', async () => {
+    const res = await refreshToken(refreshingToken);
     const receivedData = await res.json();
     expect(res.status).toBe(401);
     expect(receivedData).toHaveProperty('error');
