@@ -1,4 +1,4 @@
-const {isAlpha, isBase64, isJWT} = require('validator');
+const {isAlpha, isAlphanumeric, isBase64, isJWT} = require('validator');
 
 const nameValidator = (name) => {
     if (!isAlpha(name, 'en-US') && !isAlpha(name, 'ru-RU')) {return false}
@@ -33,6 +33,22 @@ const tokenHeaderValidator = (header) => {
     return isJWT(splitHeader[1]);
 };
 
+const projectNameValidator = (name) => {
+    if (name === '') {return false}
+    if (name[0] === ' ' || name[name.length - 1] === ' ') {return false;}
+    if (name.length > 50) {return false;}
+    const splitName = name.split(' ');
+    for (const part of splitName) {
+        if (!isAlphanumeric(part, 'en-US') && !isAlphanumeric(part, 'ru-RU') && part !== '') {return false;}
+    }
+    return true;
+};
+
+const projectDescriptionValidator = (description) => {
+    if (description[0] === ' ' || description[description.length - 1] === ' ') {return false;}
+    return description.length < 500;
+};
+
 module.exports = {
     nameValidator,
     lastNameValidator,
@@ -40,4 +56,6 @@ module.exports = {
     passwordValidator,
     loginHeaderValidator,
     tokenHeaderValidator,
+    projectNameValidator,
+    projectDescriptionValidator,
 };

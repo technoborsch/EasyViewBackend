@@ -1,7 +1,6 @@
 require('express-async-errors');
 const express = require('express');
 const mongoose = require('mongoose');
-const redis = require('redis');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -21,6 +20,7 @@ const adminPassword = process.env['ADMIN_PASSWORD'];
 const postRoutes = require('./routes/post.route');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
+const projectRoutes = require('./routes/project.route');
 
 const redisClient = require('./utils/RedisClient');
 
@@ -42,6 +42,7 @@ app.use(adminURL, admin({
 app.use('/api/v1', authRoutes);
 app.use('/api/v1', postRoutes);
 app.use('/api/v1', userRoutes);
+app.use('/api/v1', projectRoutes);
 
 app.use((error, req, res, next) => {
 	if (error.status) {

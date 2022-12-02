@@ -20,7 +20,6 @@ const authMiddleware = async (req, res, next) => {
     const decoded = info.decoded;
     const token = info.token;
     const blacklisted = await redis.getBlacklistedToken(token);
-    console.log(blacklisted)
     if (blacklisted) {
         throw new ReqError('This token has been blacklisted, please refresh or login', 401);
     }
