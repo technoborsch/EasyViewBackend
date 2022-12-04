@@ -11,17 +11,17 @@ const {
 
 const {
     getMyProfile,
+    getUserByUsername,
     updateProfile,
     deleteProfile,
 } = require('./user.request')
 
-const { getPosts } = require('../misc/misc.request')
 const {getAllProjects} = require("../project/project.request");
 
 const email = generateUserEmail();
 const password = 'Verystrongpassword55';
 const username = generateUsername();
-const lastName = 'Petrovisch';
+const lastName = 'Petrovich';
 
 test('Try to get my profile as not logged user and be rejected', async () => {
     const res = await getMyProfile('sdgfvdb');
@@ -53,8 +53,22 @@ test('Retrieve data about myself', async () => {
     expect(userData).not.toHaveProperty('_v');
 });
 
+test('Get profile via username', async () =>{
+    const res = await getUserByUsername(username);
+    const userData = await res.json();
+    expect(res.status).toBe(200);
+    expect(userData).toHaveProperty('email', email);
+    expect(userData).toHaveProperty('username', username);
+    expect(userData).toHaveProperty('isAdmin', false);
+    expect(userData).toHaveProperty('isModerator', false);
+    expect(userData).toHaveProperty('isPremium', false);
+    expect(userData).not.toHaveProperty('password');
+    expect(userData).not.toHaveProperty('_v');
+
+});
+
 const newPassword = 'Evenmorestrongandmightypassword88';
-const newName = 'Ulfich';
+const newName = 'Ulfrich';
 const about = 'Its me';
 const organization = 'Microsoft'
 

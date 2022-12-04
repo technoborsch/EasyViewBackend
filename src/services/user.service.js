@@ -12,6 +12,14 @@ const returnSelfService = async (user) => {
     return userSerializer(user);
 };
 
+const getUserByUsername = async (username) => {
+    const user = await User.findOne({username: username});
+    if (!user) {
+        throw new ReqError('There is no such user', 404);
+    }
+    return userSerializer(user);
+}
+
 /**
  * Service to update user profile
  *
@@ -56,6 +64,7 @@ const deleteProfile = async(user) => {
 
 module.exports = {
     returnSelfService,
+    getUserByUsername,
     updateProfile,
     deleteProfile
 };

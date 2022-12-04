@@ -1,5 +1,6 @@
 const {
     returnSelfService,
+    getUserByUsername,
     updateProfile,
     deleteProfile
 } = require('../services/user.service');
@@ -14,6 +15,11 @@ const {
  */
 const myProfileController = async (req, res, next) => {
     const user = await returnSelfService(req.user);
+    return res.json(user);
+};
+
+const getUserByUsernameController = async (req, res, next) => {
+    const user = await getUserByUsername(req.params.username);
     return res.json(user);
 };
 
@@ -45,6 +51,7 @@ const deleteProfileController = async (req, res, next) => {
 
 module.exports = {
     myProfileController,
+    getUserByUsernameController,
     updateProfileController,
     deleteProfileController
 };

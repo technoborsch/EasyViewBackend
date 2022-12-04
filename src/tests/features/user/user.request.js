@@ -12,6 +12,11 @@ const getMyProfile = (token) => requestFactory(
     token,
 );
 
+const getUserByUsername = (username) => requestFactory(
+    'get',
+    '/user/' + username,
+);
+
 /***
  * Function that performs request to the server to edit user's profile
  *
@@ -50,6 +55,7 @@ const deleteProfile = (token) => requestFactory(
 
 module.exports = {
     getMyProfile,
+    getUserByUsername,
     updateProfile,
     deleteProfile,
 };
