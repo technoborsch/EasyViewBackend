@@ -1,7 +1,7 @@
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
 const generateUsername = require('../../../utils/GenerateUsername');
 const extractDataFromEmailLink = require('../../../utils/ExtractDataFromEmailLink');
-const {getAllProjects} = require("../project/project.request");
+const {getMyProfile} = require("../user/user.request");
 const {
     registerUser,
     activate,
@@ -22,7 +22,7 @@ let activationToken;
 let id;
 
 test('Try to access protected path and be rejected', async () => {
-    const res = await getAllProjects('something');
+    const res = await getMyProfile('something');
     expect(res.status).toBe(401);
     const returnedData = await res.json();
     expect(returnedData).toHaveProperty('error');
@@ -103,14 +103,14 @@ test('Try to register the same email again and get an error', async () => {
 });
 
 test('Get access to protected view with received token', async () => {
-    const res = await getAllProjects(accessToken);
+    const res = await getMyProfile(accessToken);
     const returnedData = await res.json();
     expect(res.status).toBe(200);
     expect(returnedData).not.toHaveProperty('error');
 });
 
 test('Try to get access to protected view with received refresh token and be rejected', async () => {
-    const res = await getAllProjects(refreshingToken);
+    const res = await getMyProfile(refreshingToken);
     const returnedData = await res.json();
     expect(res.status).toBe(400);
     expect(returnedData).toHaveProperty('error');
@@ -263,7 +263,7 @@ test('Logout from current session', async () => {
 });
 
 test('Now access token should not work', async () => {
-    const res = await getAllProjects(accessToken);
+    const res = await getMyProfile(accessToken);
     const receivedData = await res.json();
     expect(res.status).toBe(401);
     expect(receivedData).toHaveProperty('error');

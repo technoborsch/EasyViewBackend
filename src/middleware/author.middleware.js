@@ -12,12 +12,16 @@ const onlyAuthorAndModerators = (modelName) => {
     }
         return async (req, res, next) => {
         const authenticatedUser = req.user;
-        const idOfObjectThatShouldBeChanged = req.params.id;
-        const ObjectThatShouldBeChanged = await model.findById(idOfObjectThatShouldBeChanged);
-        const authorID = ObjectThatShouldBeChanged.author;
+        let ObjectThatShouldBeChanged;
+        if (req.params.id) {
+            ObjectThatShouldBeChanged = await model.findById(req.params.id);
+        } else if (req.params.username && req.params.slug) {
+            ObjectThatShouldBeChanged = await model.findOne({author: req.params.username, slug: req.params.slug});
+        }
+        const authorUsername = ObjectThatShouldBeChanged.author;
         if (!authenticatedUser.isAdmin
             && !authenticatedUser.isModerator
-            && authenticatedUser._id.toString() !== authorID.toString()
+            && authenticatedUser.username !== authorUsername
         ) { if (ObjectThatShouldBeChanged.private) {
             throw new ReqError('There is no such object', 404);
         } else {

@@ -10,18 +10,18 @@ const {
 	editProjectController,
 	deleteProjectController,
 } = require('../controllers/project.controller');
-const {auth} = require('../middleware/auth.middleware');
+const {auth, optionalAuth} = require('../middleware/auth.middleware');
 const {onlyAuthorAndModerators} = require('../middleware/author.middleware');
 const {createProjectValidator, editProjectValidator} = require("../validators/project.validator");
 
 // Get all projects
-router.get('/projects', auth, getAllProjectsController);
+router.get('/projects', getAllProjectsController);
 //Get all my projects
 router.get('/projects/my', auth, getAllMyProjectsController);
-// Get project by ID
-router.get('/projects/:id', auth, getProjectByIDController);
 // Get project by slug
-router.get('/projects/slug/:slug', auth, getProjectBySlugController);
+router.get('/projects/:username/:slug', optionalAuth, getProjectBySlugController);
+// Get project by ID
+router.get('/projects/:id', optionalAuth, getProjectByIDController);
 // Create project
 router.post('/projects', auth, createProjectValidator, createProjectController);
 // Edit project

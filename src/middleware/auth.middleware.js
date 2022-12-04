@@ -31,6 +31,14 @@ const authMiddleware = async (req, res, next) => {
     next();
 };
 
+const optionalAuth = async (req, res, next) => {
+    if (req.get('Authorization')) {
+        return authMiddleware(req, res, next);
+    } else {
+        next();
+    }
+};
+
 /***
  * Authentication middleware that checks if correct refresh token has been provided, user exists and active
  * and attaches authorized user and used refresh token to request.
@@ -105,5 +113,6 @@ const checkIfUserExists = async (userId) => {
 
 module.exports = {
     auth: authMiddleware,
+    optionalAuth,
     refreshAuth: refreshAuthMiddleware
 };

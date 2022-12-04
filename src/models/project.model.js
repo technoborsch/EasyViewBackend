@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const projectSchema = new Schema({
     name: {
         type: String,
-        unique: true,
         required: true,
     },
     description: {
@@ -17,13 +16,12 @@ const projectSchema = new Schema({
         default: false,
     },
     author: {
-        type: Schema.Types.ObjectId,
+        type: String,
         required: true,
         ref: 'user',
     },
     slug: {
         type: String,
-        unique: true,
         required: true,
     },
 }, {

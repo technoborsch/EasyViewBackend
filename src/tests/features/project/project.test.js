@@ -64,25 +64,25 @@ describe('Tests for project feature', () =>{
         project2.id = receivedData2.id;
     });
 
-    test('Second user tries to create a project with the same name and gets rejected', async () => {
+    test('First user tries to create a project with the same name and gets rejected', async () => {
         const sameNameProject = {
             name: project1.name,
             description: 'Nice project',
             slug: 'another_slug'
         };
-        const res = await createProject(token2, sameNameProject);
+        const res = await createProject(token1, sameNameProject);
         const receivedData = await res.json();
         expect(res.status).toBe(409);
         expect(receivedData).toHaveProperty('error');
     });
 
-    test('Second user tries to create a project with the same slug and gets rejected', async () => {
+    test('First user tries to create a project with the same slug and gets rejected', async () => {
         const sameSlugProject = {
             name: 'UniqueName',
             description: 'Nice project',
             slug: project2.slug,
         };
-        const res = await createProject(token2, sameSlugProject);
+        const res = await createProject(token1, sameSlugProject);
         const receivedData = await res.json();
         expect(res.status).toBe(409);
         expect(receivedData).toHaveProperty('error');
@@ -114,6 +114,49 @@ describe('Tests for project feature', () =>{
         expect(privateProject).toHaveProperty('slug', project2.slug);
     });
 
+    test('It is possible to get a list of projects without authentication and see there only a public project', async () => {
+        const res = await getAllProjects(null);
+        const receivedData = await res.json();
+        expect(res.status).toBe(200);
+        expect(receivedData.length).toBe(1);
+        const publicProject = receivedData[0];
+        expect(publicProject).toHaveProperty('id', project1.id);
+        expect(publicProject).toHaveProperty('name', project1.name);
+        expect(publicProject).toHaveProperty('slug', project1.slug);
+    });
+
+    test('It is possible to get a public project by ID without authentication', async () => {
+        const res = await getProjectById(null, project1.id);
+        const receivedData = await res.json();
+        expect(res.status).toBe(200);
+        expect(receivedData).toHaveProperty('id', project1.id);
+        expect(receivedData).toHaveProperty('name', project1.name);
+        expect(receivedData).toHaveProperty('slug', project1.slug);
+    });
+
+    test('It is possible to get a public project by slug without authentication', async () => {
+        const res = await getProjectBySlug(null, user1name, project1.slug);
+        const receivedData = await res.json();
+        expect(res.status).toBe(200);
+        expect(receivedData).toHaveProperty('id', project1.id);
+        expect(receivedData).toHaveProperty('name', project1.name);
+        expect(receivedData).toHaveProperty('slug', project1.slug);
+    });
+
+    test('It is not possible to get a private project by ID without authentication', async () => {
+        const res = await getProjectById(null, project2.id);
+        const receivedData = await res.json();
+        expect(res.status).toBe(404);
+        expect(receivedData).toHaveProperty('error');
+    });
+
+    test('It is not possible to get a private project by slug without authentication', async () => {
+        const res = await getProjectBySlug(null, user1name, project2.slug);
+        const receivedData = await res.json();
+        expect(res.status).toBe(404);
+        expect(receivedData).toHaveProperty('error');
+    });
+
     test('Second user gets all projects and sees there only a public project too', async () => {
         const res = await getAllProjects(token2);
         const receivedData = await res.json();
@@ -125,7 +168,7 @@ describe('Tests for project feature', () =>{
         expect(publicProject).toHaveProperty('slug', project1.slug);
     });
 
-    test('Second user gets their projects and sees there empty list', async () => {
+    test('Second user gets their projects and sees there an empty list', async () => {
         const res = await getAllMyProjects(token2);
         const receivedData = await res.json();
         expect(res.status).toBe(200);
@@ -142,7 +185,7 @@ describe('Tests for project feature', () =>{
     });
 
     test('First user is able to get their public project by slug', async () => {
-        const res = await getProjectBySlug(token1, project1.slug);
+        const res = await getProjectBySlug(token1, user1name, project1.slug);
         const receivedData = await res.json();
         expect(res.status).toBe(200);
         expect(receivedData).toHaveProperty('id', project1.id);
@@ -160,7 +203,7 @@ describe('Tests for project feature', () =>{
     });
 
     test('First user is able to get their private project by slug', async () => {
-        const res = await getProjectBySlug(token1, project2.slug);
+        const res = await getProjectBySlug(token1, user1name, project2.slug);
         const receivedData = await res.json();
         expect(res.status).toBe(200);
         expect(receivedData).toHaveProperty('id', project2.id);
@@ -178,7 +221,7 @@ describe('Tests for project feature', () =>{
     });
 
     test('Second user is able to get a public project by slug', async () => {
-        const res = await getProjectBySlug(token2, project1.slug);
+        const res = await getProjectBySlug(token2, user1name, project1.slug);
         const receivedData = await res.json();
         expect(res.status).toBe(200);
         expect(receivedData).toHaveProperty('id', project1.id);
@@ -194,7 +237,7 @@ describe('Tests for project feature', () =>{
     });
 
     test('Second user is not able to get a private project by slug', async () => {
-        const res = await getProjectBySlug(token2, project2.slug);
+        const res = await getProjectBySlug(token2, user1name, project2.slug);
         const receivedData = await res.json();
         expect(res.status).toBe(404);
         expect(receivedData).toHaveProperty('error');

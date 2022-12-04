@@ -14,22 +14,22 @@ const getAllProjectsController = async (req, res, next) => {
 };
 
 const getAllMyProjectsController = async (req, res, next) => {
-    const getAllMyProjectsService = await getAllMyProjects(req.user._id);
+    const getAllMyProjectsService = await getAllMyProjects(req.user.username);
     return res.json(getAllMyProjectsService);
 };
 
 const getProjectByIDController = async (req, res, next) => {
-    const getProjectByIDService = await getProjectByID(req.user._id, req.params.id);
+    const getProjectByIDService = await getProjectByID(req.user? req.user.username : null, req.params.id);
     return res.json(getProjectByIDService);
 };
 
 const getProjectBySlugController = async (req, res, next) => {
-    const getProjectBySlugService = await getProjectBySlug(req.user._id, req.params.slug);
+    const getProjectBySlugService = await getProjectBySlug(req.user? req.user.username : null, req.params.username, req.params.slug);
     return res.json(getProjectBySlugService);
 };
 
 const createProjectController = async (req, res, next) => {
-    const createProjectService = await createProject(req.user._id, req.body);
+    const createProjectService = await createProject(req.user.username, req.body);
     return res.json(createProjectService);
 };
 

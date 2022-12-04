@@ -16,8 +16,6 @@ const {
     deleteProfile,
 } = require('./user.request')
 
-const {getAllProjects} = require("../project/project.request");
-
 const email = generateUserEmail();
 const password = 'Verystrongpassword55';
 const username = generateUsername();
@@ -115,6 +113,4 @@ test('Delete profile', async () => {
 test('Not to be able to access protected pages', async () => {
     const res = await getMyProfile(accessToken);
     expect(res.status).toBe(401);
-    const secondRes = await getAllProjects(accessToken);
-    expect(secondRes.status).toBe(401);
 });

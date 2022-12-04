@@ -18,9 +18,9 @@ const getProjectById = (token, id) => requestFactory(
     token,
 );
 
-const getProjectBySlug = (token, slug) => requestFactory(
+const getProjectBySlug = (token, username, slug) => requestFactory(
     'get',
-    '/projects/slug/' + slug,
+    '/projects/' + username + '/' + slug,
     token,
 );
 
