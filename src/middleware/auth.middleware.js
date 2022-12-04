@@ -29,7 +29,7 @@ const authMiddleware = async (req, res, next) => {
     req.user = await checkIfUserExists(decoded.id);
     req.token = token;
     next();
-}
+};
 
 /***
  * Authentication middleware that checks if correct refresh token has been provided, user exists and active
@@ -54,7 +54,7 @@ const refreshAuthMiddleware = async (req, res, next) => {
     req.user = await checkIfUserExists(decoded.id);
     req.token = token;
     next();
-}
+};
 
 /**
  * Function used to validate if correct auth headers were provided in request to protected route

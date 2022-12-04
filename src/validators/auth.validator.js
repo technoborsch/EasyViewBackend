@@ -4,11 +4,9 @@ const {
     isHexadecimal,
 } = require('validator');
 const {
-    nameValidator,
+    usernameValidator,
     passwordValidator,
     loginHeaderValidator,
-    lastNameValidator,
-    patronymicValidator,
 } = require('./fieldValidators')
 const {
     bodyValidatorFactory,
@@ -17,8 +15,8 @@ const {
 } = require("../utils/ValidatorFactory");
 
 /**
- * Validates request that will be provided to signup controller. This data must contain only one attribute "email" with
- * valid email.
+ * Validates request that will be provided to signup controller. This data must contain attributes "email" with
+ * valid email, "username" with valid username and "password" with password that is strong enough.
  * Any other attribute is not allowed.
  *
  * @param req Validated request
@@ -29,6 +27,8 @@ const signupValidator = (req, res, next) => {
     const validateBody = bodyValidatorFactory(
         [
             ['email', isEmail],
+            ['username', usernameValidator],
+            ['password', passwordValidator],
         ],
     );
     validateBody(req);
@@ -38,13 +38,8 @@ const signupValidator = (req, res, next) => {
 /***
  * Validates data provided in request to activate user.
  * It must contain:
- * "id" attribute with valid MongoDB ID;
- * "password" attribute with valid password;
+ * "id" attribute with valid MongoDB ID of a user that should be activated;
  * "token" attribute with valid hexadecimal number;
- * "name" attribute with valid name;
- * "lastName" attribute with valid user's lastname;
- * It can contain:
- * "patronymic" with valid user's patronymic.
  * Any other attribute is not allowed.
  *
  * @param req Validated request
@@ -55,14 +50,8 @@ const activateValidator = (req, res, next) => {
     const validateBody = bodyValidatorFactory(
         [
             ['id', isMongoId],
-            ['password', passwordValidator],
             ['token', isHexadecimal],
-            ['name', nameValidator],
-            ['lastName', lastNameValidator]
         ],
-        [
-        ['patronymic', patronymicValidator]
-    ]
     );
     validateBody(req);
     next();
@@ -72,7 +61,7 @@ const activateValidator = (req, res, next) => {
  * Validator for signin requests.
  * All signin requests must contain "Authorization" header with content in format:
  * "Bearer" + " " + "base64-encoded string of format (login:password)".
- * Request must not contain body.
+ * Request must not contain a body.
  *
  * @param req Validated request
  * @param res Response object
@@ -90,9 +79,19 @@ const signinValidator = (req, res, next) => {
 };
 
 /**
- * Requirements for request to reset password requests are the same that to signup.
+ * Validates requests to reset password requests, must contain only "email" attribute with valid email.
+ *
+ * @param req Validated request
+ * @param res Response object
+ * @param next Next function
  */
-const resetPasswordRequestValidator = signupValidator;
+const resetPasswordRequestValidator = (req, res, next) => {
+    const validateBody = bodyValidatorFactory([
+        ['email', isEmail],
+    ]);
+    validateBody(req);
+    next();
+};
 
 /**
  * Validator for data to reset password.

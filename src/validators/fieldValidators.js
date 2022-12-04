@@ -1,22 +1,44 @@
-const {isAlpha, isAlphanumeric, isBase64, isJWT} = require('validator');
+const {
+    isAlpha,
+    isAlphanumeric,
+    isBase64,
+    isJWT,
+    isSlug,
+    isStrongPassword,
+    isLength,
+} = require('validator');
+
+const startsOrEndsWithWhiteSpace = (string) => {
+    return string[0] === ' ' || string[string.length - 1] === ' ';
+};
+
+const usernameValidator = (username) => {
+    if (!isAlphanumeric(username) && !isSlug) {return false}
+    return isLength(username, 5, 50);
+};
 
 const nameValidator = (name) => {
     if (!isAlpha(name, 'en-US') && !isAlpha(name, 'ru-RU')) {return false}
-    return name.length >= 2 && name.length <= 100;
+    return isLength(name, 2, 100);
 };
 
 const lastNameValidator = (lastName) => {
     if (!isAlpha(lastName, 'en-US') && !isAlpha(lastName, 'ru-RU')) {return false}
-    return lastName.length >= 1 && lastName.length <= 100;
+    return isLength(lastName, 1, 100);
 };
 
-const patronymicValidator = (patronymic) => {
-    if (!isAlpha(patronymic, 'en-US') && !isAlpha(patronymic, 'ru-RU')) {return false}
-    return patronymic.length >= 5 && patronymic.length <= 100;
+const organizationValidator = (organization) => {
+    if (startsOrEndsWithWhiteSpace(organization)) {return false}
+    return isLength(organization, 1, 100);
 };
+
+const aboutValidator = (about) => {
+    if (startsOrEndsWithWhiteSpace(about)) {return false}
+    return isLength(about, 1, 500);
+}
 
 const passwordValidator = (password) => {
-    return password.length >= 6 && password.length <= 100;
+    return isStrongPassword(password, {minSymbols: 0});
 };
 
 const loginHeaderValidator = (header) => {
@@ -35,7 +57,7 @@ const tokenHeaderValidator = (header) => {
 
 const projectNameValidator = (name) => {
     if (name === '') {return false}
-    if (name[0] === ' ' || name[name.length - 1] === ' ') {return false;}
+    if (startsOrEndsWithWhiteSpace(name)) {return false;}
     if (name.length > 50) {return false;}
     const splitName = name.split(' ');
     for (const part of splitName) {
@@ -50,10 +72,12 @@ const projectDescriptionValidator = (description) => {
 };
 
 module.exports = {
+    usernameValidator,
     nameValidator,
     lastNameValidator,
-    patronymicValidator,
     passwordValidator,
+    aboutValidator,
+    organizationValidator,
     loginHeaderValidator,
     tokenHeaderValidator,
     projectNameValidator,

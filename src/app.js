@@ -17,7 +17,6 @@ const adminURL = process.env['ADMIN_URL'];
 const adminUser = process.env['ADMIN_USER'];
 const adminPassword = process.env['ADMIN_PASSWORD'];
 
-const postRoutes = require('./routes/post.route');
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const projectRoutes = require('./routes/project.route');
@@ -40,7 +39,6 @@ app.use(adminURL, admin({
 }));
 
 app.use('/api/v1', authRoutes);
-app.use('/api/v1', postRoutes);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', projectRoutes);
 

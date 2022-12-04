@@ -18,22 +18,35 @@ const accessJWTExpiry = process.env['ACCESS_JWT_EXPIRY']; //in minutes
 /**
  * A service used to sign up a user with given data
  *
- * @param {Object<{email: string}>} data Object that contains email field
+ * @param {Object<{email: string, username: string, password: string}>} data Object that contains email, username and password fields
  * @returns {Object<{success: Boolean}>} Object that informs that registration was successful.
  */
 const signup = async (data) => {
   let user = await User.findOne({ email: data.email});
   //If there is already a user with this email and is active, reject registration
   if (user && user.isActive) {
-    throw new ReqError("Email already exist", 409);
+    throw new ReqError('Email already exist', 409);
+  }
+  if (user && !user.isActive && user.username !== data.username) {
+    throw new ReqError(`We found that there was an account registered on this email but with different username. ' +
+        'Please use username ${user.username} during registration`, 409);
+  }
+  // If there is already a user with this username but with different email, reject registration
+  let userWithSameUsername = await User.findOne({username: data.username});
+  if (userWithSameUsername && userWithSameUsername.email !== data.email) {
+    throw new ReqError('This username is already in use', 409);
   }
   if (!user) { //Then create one
     user = new User(data); //Potentially dangerous, very strict validation of data must be performed
     await user.save();
   } else { //Then it means that we have not active existing user that probably already had a token
     //If there is already a token for this user issued less than a minute ago, reject request
+    if (userWithSameUsername) {
+      user.password = data.password;
+      await user.save();
+    }
     let token = await Token.findOne({ userId: user._id, forReset: false });
-    if (token && Date.now() - token.createdAt < 60 * 1000) { //a minute
+    if (token && Date.now() - token.createdAt < 60 * 1000) { // a minute
       throw new ReqError('You already have a registration token issued less than a minute ago, please use it or try again later', 409);
     }
   }
@@ -75,11 +88,6 @@ const activate = async (data) => {
   const user = await User.findById(data.id);
   //If there is no such user in database for some reason, reject request
   if (!user) throw new ReqError('No such user', 404);
-  //Apply and save provided information to this user
-  user.password = data.password;
-  user.name = data.name;
-  user.patronymic = data.patronymic;
-  user.lastName = data.lastName;
   user.isActive = true;
   await user.save();
   return { success: true };
@@ -89,13 +97,29 @@ const activate = async (data) => {
  * Login service, used to check if credentials are valid and, if they are, return information about user and
  * access/refresh token pair
  *
- * @param {string} email User email
+ * @param {string} emailOrUsername User email or username, it will accept both
  * @param {string} password User password
- * @returns {Promise<{user: {lastName, patronymic, isModerator, name, id, isAdmin, email}, token: (*)}>}
+ * @returns {Promise<{
+ * user: {
+ * lastName,
+ * isModerator,
+ * name,
+ * id,
+ * username,
+ * isAdmin,
+ * isPremium,
+ * about,
+ * organization,
+ * email},
+ * accessToken: string,
+ * refreshToken: string}>}
  */
-const signin = async (email, password) => {
+const signin = async (emailOrUsername, password) => {
   //If there is no such user in database or the user is inactive, reject
-  const user = await User.findOne({email: email});
+  let user = await User.findOne({email: emailOrUsername});
+  if (!user) {
+    user = await User.findOne({username: emailOrUsername});
+  }
   if (!user || !user.isActive) {
     throw new ReqError('Wrong email or password', 401);
   }
@@ -151,7 +175,7 @@ const logOut = async (userId, accessToken) => {
  * @returns {Object<{success: Boolean}>} Promise that fulfills with info of user's id and token to reset password
  */
 const requestPasswordReset = async (email) => {
-  //If there is no such user or the user is inactive, reject request
+  //If there is no such user with this email or the user is inactive, reject request
   const user = await User.findOne({ email: email });
   if (!user || !user.isActive) throw new ReqError("User does not exist", 404);
   //If there is already token for this user, delete it

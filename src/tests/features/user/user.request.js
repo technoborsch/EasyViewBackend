@@ -19,10 +19,11 @@ const getMyProfile = (token) => requestFactory(
  * @param {string} [name] New name
  * @param {string} [password] New password
  * @param {string} [lastName] New lastname
- * @param {string} [patronymic] New patronymic
+ * @param {string} [about] New about
+ * @param {string} [organization] New organization
  * @returns {Promise<Response>} Promise with response from server
  */
-const updateProfile = (token, name, password, lastName, patronymic) => requestFactory(
+const updateProfile = (token, name, password, lastName, about, organization) => requestFactory(
     'post',
     '/user',
     token,
@@ -30,7 +31,8 @@ const updateProfile = (token, name, password, lastName, patronymic) => requestFa
         name: name,
         lastName: lastName,
         password: password,
-        patronymic: patronymic
+        about: about,
+        organization: organization,
     }
 );
 

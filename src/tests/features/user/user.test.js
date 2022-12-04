@@ -1,4 +1,5 @@
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
+const generateUsername = require('../../../utils/GenerateUsername');
 
 const {
     signin,
@@ -15,15 +16,15 @@ const {
 } = require('./user.request')
 
 const { getPosts } = require('../misc/misc.request')
+const {getAllProjects} = require("../project/project.request");
 
 const email = generateUserEmail();
-const password = 'verystrongpassword';
-const name = 'Vasya';
+const password = 'Verystrongpassword55';
+const username = generateUsername();
 const lastName = 'Petrovisch';
-const patronymic = 'Petrenko'
 
 test('Try to get my profile as not logged user and be rejected', async () => {
-    const res = await getMyProfile();
+    const res = await getMyProfile('sdgfvdb');
     expect(res.status).toBe(401);
     const userData = await res.json();
     expect(userData).toHaveProperty('error');
@@ -32,7 +33,7 @@ test('Try to get my profile as not logged user and be rejected', async () => {
 let accessToken;
 
 test('Retrieve an access token', async () => {
-    const data = await registerActivateAndLogin(email, name, lastName, password, patronymic);
+    const data = await registerActivateAndLogin(email, username, password);
     expect(data).toHaveProperty('user');
     expect(data).toHaveProperty('accessToken');
     expect(data).toHaveProperty('refreshToken');
@@ -44,27 +45,32 @@ test('Retrieve data about myself', async () => {
     expect(res.status).toBe(200);
     const userData = await res.json();
     expect(userData).toHaveProperty('email', email);
-    expect(userData).toHaveProperty('name', name);
-    expect(userData).toHaveProperty('lastName', lastName);
+    expect(userData).toHaveProperty('username', username);
     expect(userData).toHaveProperty('isAdmin', false);
     expect(userData).toHaveProperty('isModerator', false);
+    expect(userData).toHaveProperty('isPremium', false);
     expect(userData).not.toHaveProperty('password');
     expect(userData).not.toHaveProperty('_v');
 });
 
-const newPassword = 'evenmorestrongandmightypassword';
-let newName = 'Ulfich'
+const newPassword = 'Evenmorestrongandmightypassword88';
+const newName = 'Ulfich';
+const about = 'Its me';
+const organization = 'Microsoft'
 
 test('Update profile and see changes', async () => {
-    const res = await updateProfile(accessToken, newName, newPassword, lastName, patronymic);
+    const res = await updateProfile(accessToken, newName, newPassword, lastName, about, organization);
     const userData = await res.json();
     expect(res.status).toBe(200);
     expect(userData).toHaveProperty('email', email);
-    expect(userData).toHaveProperty('name', newName);
+    expect(userData).toHaveProperty('username', username);
     expect(userData).toHaveProperty('lastName', lastName);
-    expect(userData).toHaveProperty('patronymic', patronymic);
+    expect(userData).toHaveProperty('name', newName);
+    expect(userData).toHaveProperty('about', about);
+    expect(userData).toHaveProperty('organization', organization);
     expect(userData).toHaveProperty('isAdmin', false);
     expect(userData).toHaveProperty('isModerator', false);
+    expect(userData).toHaveProperty('isPremium', false);
     expect(userData).not.toHaveProperty('password');
     expect(userData).not.toHaveProperty('_v');
 });
@@ -95,6 +101,6 @@ test('Delete profile', async () => {
 test('Not to be able to access protected pages', async () => {
     const res = await getMyProfile(accessToken);
     expect(res.status).toBe(401);
-    const secondRes = await getPosts(accessToken);
+    const secondRes = await getAllProjects(accessToken);
     expect(secondRes.status).toBe(401);
 });

@@ -46,9 +46,9 @@ const signInController = async (req, res, next) => {
   const header = req.get('Authorization');
   const bearerString = header.split(' ');
   const credentials = Buffer.from(bearerString[1], 'base64').toString('utf-8').split(':');
-  const email = credentials[0];
+  const emailOrUsername = credentials[0];
   const password = credentials[1];
-  const signInService = await signin(email, password);
+  const signInService = await signin(emailOrUsername, password);
   return res.json(signInService);
 };
 

@@ -3,7 +3,8 @@ const {
     nameValidator,
     passwordValidator,
     lastNameValidator,
-    patronymicValidator
+    aboutValidator,
+    organizationValidator,
 } = require("./fieldValidators");
 
 /**
@@ -12,7 +13,8 @@ const {
  * "password" attribute with valid password;
  * "name" attribute with valid name;
  * "lastName" attribute with valid user's lastname;
- * "patronymic" with valid user's patronymic.
+ * "about" attribute with valid information about user;
+ * "organization" attribute with valid information about user's organization;
  * Any other attribute is not allowed.
  *
  * @param req Validated request
@@ -24,8 +26,9 @@ const updateProfileValidator = (req, res, next) => {
         [
         ['name', nameValidator],
         ['lastName', lastNameValidator],
-        ['patronymic', patronymicValidator],
         ['password', passwordValidator],
+        ['about', aboutValidator],
+        ['organization', organizationValidator],
     ]);
     validateBody(req);
     next();

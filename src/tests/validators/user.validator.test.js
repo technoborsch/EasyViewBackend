@@ -6,36 +6,33 @@ describe('User profile updating data validation tests', () => {
     const res = {};
         const cases = [
         [{
-            password: 'supamegapassword',
+            password: 'supaMegapassword77',
             name: 'John',
             lastName: 'Петренко',
         }, true],
         [{
         }, false],
         [{
-            password: 'supapassword',
+            password: 'supaPassword55',
         }, true],
         [null, false],
         ['great_body', false],
         [{
-            password: 'supapassword',
+            password: '55supaPassword',
             name: 'John',
             lastName: 'Петренко',
-            patronymic: 'Петрович',
             isAdmin: true,
         }, false],
         [{
-            password: 'supapassword',
+            password: 'supaMassword87878',
             name: 'John',
             lastName: 'Петренко',
-            patronymic: 'Петрович',
             isModerator: true,
         }, false],
         [{
-            password: 'supapassword',
+            password: 'supa4asswoRd',
             name: 'John',
             lastName: 'Петренко',
-            patronymic: 'Петрович',
             ping: 'pong',
         }, false],
 

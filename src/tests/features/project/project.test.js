@@ -9,25 +9,24 @@ const {
     deleteProject,
 } = require('./project.request');
 const {generateUserEmail} = require("../../../utils/GenerateUserEmail");
+const generateUsername = require('../../../utils/GenerateUsername');
 
 describe('Tests for project feature', () =>{
 
     const user1mail = generateUserEmail();
-    const user1name = 'Johnny';
-    const user1lastname = 'Depp';
-    const user1password = 'thispasswordisunique';
+    const user1name = generateUsername();
+    const user1password = 'thisPasswordisunique99';
 
     const user2mail = generateUserEmail();
-    const user2name = 'Leonardo';
-    const user2lastname = 'DiCaprio';
-    const user2password = 'thispasswordismoreunique';
+    const user2name = generateUsername();
+    const user2password = 'Thispasswordismoreunique55';
 
     let token1;
     let token2;
 
     test('Register two users', async () => {
-        const loginData1 = await registerActivateAndLogin(user1mail, user1name, user1lastname, user1password);
-        const loginData2 = await registerActivateAndLogin(user2mail, user2name, user2lastname, user2password);
+        const loginData1 = await registerActivateAndLogin(user1mail, user1name, user1password);
+        const loginData2 = await registerActivateAndLogin(user2mail, user2name, user2password);
         expect(loginData1).toBeTruthy();
         expect(loginData2).toBeTruthy();
         token1 = loginData1.accessToken;
@@ -245,7 +244,6 @@ describe('Tests for project feature', () =>{
         }
         const res = await editProject(token1, project1.id, data);
         const receivedData = await res.json();
-        console.log(receivedData)
         expect(res.status).toBe(409);
         expect(receivedData).toHaveProperty('error');
     });

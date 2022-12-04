@@ -29,8 +29,11 @@ const updateProfile = async (data, user) => {
     if (data.lastName) {
         user.lastName = data.lastName;
     }
-    if (data.patronymic) {
-        user.patronymic = data.patronymic;
+    if (data.about) {
+        user.about = data.about;
+    }
+    if (data.organization) {
+        user.organization = data.organization;
     }
     const updatedUser = await user.save();
     return userSerializer(updatedUser);

@@ -6,21 +6,19 @@ const {
 const extractDataFromEmailLink = require("../../../utils/ExtractDataFromEmailLink");
 
 /***
- * Function that performs user's registration, activation and login and returns promise with received access token.
+ * Function that performs user registration, activation and login and returns promise with received access token.
  *
  * @param {string} email User's email
- * @param {string} name User's name
- * @param {string} lastName User's lastname
+ * @param {string} username User's name
  * @param {string} password User's password
- * @param {string} [patronymic] User's patronymic
  * @returns {Promise<{user: Object, accessToken: string, refreshToken: string}>} Promise with access token
  */
-const registerActivateAndLogin = async (email, name, lastName, password, patronymic) => {
-    await registerUser(email);
+const registerActivateAndLogin = async (email, username, password) => {
+    await registerUser(email, username, password);
     const data = await extractDataFromEmailLink(email);
     const token = data[0];
     const id = data[1];
-    await performActivation(id, token, name, lastName, password, patronymic);
+    await performActivation(id, token);
     return await performLogin(email, password);
 };
 
@@ -29,14 +27,10 @@ const registerActivateAndLogin = async (email, name, lastName, password, patrony
  *
  * @param {string} id User id
  * @param {string} token Received token
- * @param {string} name User's name
- * @param {string} lastName User's lastname
- * @param {string} password Account password
- * @param {string} [patronymic] User's patronymic
  * @returns {Promise<Object>} Promise with response from server
  */
-const performActivation = async (id, token, name, lastName, password, patronymic) => {
-    const response = await activate(id, token, name, lastName, password, patronymic);
+const performActivation = async (id, token) => {
+    const response = await activate(id, token);
     return await response.json();
 };
 

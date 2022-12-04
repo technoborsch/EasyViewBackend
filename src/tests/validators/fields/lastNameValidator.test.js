@@ -9,7 +9,7 @@ const cases = [
     ['Игорь ', false],
     ['', false],
     ['FFFFFFFFFFFFFFFFFFFFFFF', true],
-    ['RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR', false]
+    ['R'.repeat(101), false]
 ];
 describe("Tests for name field validator", () => {
     test.each(cases)(
