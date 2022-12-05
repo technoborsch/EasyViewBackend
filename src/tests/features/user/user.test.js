@@ -7,7 +7,7 @@ const {
 
 const {
     registerActivateAndLogin
-} = require('../auth/auth.action')
+} = require('../auth/auth.action');
 
 const {
     getUserByUsername,
@@ -80,6 +80,13 @@ test('Check that user is not able to login with old password', async () => {
     const resData = await res.json();
     expect(res.status).toBe(401);
     expect(resData).toHaveProperty('error');
+});
+
+test('Get user route should process random requests to get user adequately', async () => {
+    const res = await getUserByUsername('shaka laka');
+    const receivedData = await res.json();
+    expect(res.status).toBe(404);
+    expect(receivedData).toHaveProperty('error');
 });
 
 test('Delete profile', async () => {

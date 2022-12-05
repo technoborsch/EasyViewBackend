@@ -1,7 +1,7 @@
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
 const generateUsername = require('../../../utils/GenerateUsername');
 const extractDataFromEmailLink = require('../../../utils/ExtractDataFromEmailLink');
-const {getProtected} = require("../user/user.request");
+const {getProtected, getUserByUsername} = require("../user/user.request");
 const {
     registerUser,
     activate,
@@ -40,6 +40,13 @@ test('Register new user and retrieve an activation token', async () => {
 
 test('Try to reset password while account is not already active', async () => {
     const res = await resetPasswordRequest(userEmail);
+    const receivedData = await res.json();
+    expect(res.status).toBe(404);
+    expect(receivedData).toHaveProperty('error');
+});
+
+test('Try to get accout info while account is not already active', async () => {
+    const res = await getUserByUsername(username);
     const receivedData = await res.json();
     expect(res.status).toBe(404);
     expect(receivedData).toHaveProperty('error');

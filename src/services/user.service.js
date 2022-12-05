@@ -20,11 +20,11 @@ const getUsers = async () => {
 
 const getUserByUsername = async (username) => {
     const user = await User.findOne({username: username});
-    if (!user) {
+    if (!user || !user.isActive) {
         throw new ReqError('There is no such user', 404);
     }
     return userSerializer(user);
-}
+};
 
 /**
  * Service to update user profile
@@ -54,7 +54,7 @@ const updateProfile = async (data, user) => {
 };
 
 /**
- * Service to delete user profile (actually just change its isActive property)
+ * Service to delete user profile.
  *
  * @param {User} user User that has to be deleted
  * @returns {Promise<{success: boolean}>} Promise with info whether deletion has been successful
