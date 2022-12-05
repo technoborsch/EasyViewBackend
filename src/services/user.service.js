@@ -1,15 +1,21 @@
 const User = require('../models/user.model');
 const Token = require('../models/token.model');
 const userSerializer = require('../serializers/user.serializer');
+const ReqError = require("../utils/ReqError");
+const Project = require("../models/project.model");
 
 /**
- * Returns trimmed info about given user
+ * Returns list of trimmed active users
  *
- * @param {User} user User that has to be trimmed and returned
- * @returns {Promise<{userSerializer}>} Promise with user information
+ * @returns {Promise<[{userSerializer}]>} Promise with list of active users
  */
-const returnSelfService = async (user) => {
-    return userSerializer(user);
+const getUsers = async () => {
+    const activeUsers = await User.find({isActive: true});
+    const serializedActiveUsers = [];
+    for (const user of activeUsers) {
+        serializedActiveUsers.push(userSerializer(user));
+    }
+    return serializedActiveUsers;
 };
 
 const getUserByUsername = async (username) => {
@@ -55,15 +61,15 @@ const updateProfile = async (data, user) => {
  */
 const deleteProfile = async(user) => {
     //No logic to check if user exists and is active because it has been already checked during authentication
-    user.isActive = false;
-    await user.save();
-    //Delete all issued tokens
+    await User.findByIdAndDelete(user._id);
+    //Delete all related objects
     await Token.deleteMany({userId: user._id});
+    await Project.deleteMany({author: user.username});
     return {success: true}
 };
 
 module.exports = {
-    returnSelfService,
+    getUsers,
     getUserByUsername,
     updateProfile,
     deleteProfile

@@ -30,8 +30,20 @@ const onlyAuthorAndModerators = (modelName) => {
         }
         next();
     };
-}
+};
+
+const onlySelfAndModerators = async (req, res, next) => {
+    const authenticatedUser = req.user;
+    if (!authenticatedUser.isAdmin
+        && !authenticatedUser.isModerator
+        && !authenticatedUser.username === req.params.username
+    ) {
+        throw new ReqError('You are not allowed to modify this user', 403);
+    }
+    next();
+};
 
 module.exports = {
     onlyAuthorAndModerators,
+    onlySelfAndModerators,
 }

@@ -1,5 +1,5 @@
 const {
-    returnSelfService,
+    getUsers,
     getUserByUsername,
     updateProfile,
     deleteProfile
@@ -13,8 +13,8 @@ const {
  * @param next Next function
  * @returns {Promise<Object>}
  */
-const myProfileController = async (req, res, next) => {
-    const user = await returnSelfService(req.user);
+const getUsersController = async (req, res, next) => {
+    const user = await getUsers();
     return res.json(user);
 };
 
@@ -50,7 +50,7 @@ const deleteProfileController = async (req, res, next) => {
 };
 
 module.exports = {
-    myProfileController,
+    getUsersController,
     getUserByUsernameController,
     updateProfileController,
     deleteProfileController

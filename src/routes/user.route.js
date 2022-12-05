@@ -1,9 +1,11 @@
 const express = require('express');
 
-const {auth} = require('../middleware/auth.middleware');
+const {auth,} = require('../middleware/auth.middleware');
+const {onlySelfAndModerators} = require('../middleware/author.middleware');
+
 const {updateProfileValidator} = require('../validators/user.validator');
 const {
-    myProfileController,
+    getUsersController,
     getUserByUsernameController,
     updateProfileController,
     deleteProfileController,
@@ -11,13 +13,15 @@ const {
 
 const router = express.Router();
 
-//Route used to get profile of currently authorized user
-router.get('/user', auth, myProfileController);
+//Route used to get list of users
+router.get('/user', auth, getUsersController);
 //Route used to get user profile by username
 router.get('/user/:username', getUserByUsernameController);
 //Route used to update authorized user's profile
-router.post('/user', auth, updateProfileValidator, updateProfileController);
-//Route used to delete authorized user (actually user isn't deleted from database)
-router.delete('/user', auth, deleteProfileController);
+router.post('/user/:username', auth, onlySelfAndModerators, updateProfileValidator, updateProfileController);
+//Route used to delete authorized user and all his objects
+router.delete('/user/:username', auth, onlySelfAndModerators, deleteProfileController);
+//Just a little test route
+router.get('/user/test/protected', auth, (req, res, next) => {return res.json({success: true})});
 
 module.exports = router;

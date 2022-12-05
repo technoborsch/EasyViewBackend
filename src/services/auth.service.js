@@ -27,10 +27,6 @@ const signup = async (data) => {
   if (user && user.isActive) {
     throw new ReqError('Email already exist', 409);
   }
-  if (user && !user.isActive && user.username !== data.username) {
-    throw new ReqError(`We found that there was an account registered on this email but with different username. ' +
-        'Please use username ${user.username} during registration`, 409);
-  }
   // If there is already a user with this username but with different email, reject registration
   let userWithSameUsername = await User.findOne({username: data.username});
   if (userWithSameUsername && userWithSameUsername.email !== data.email) {
@@ -41,10 +37,6 @@ const signup = async (data) => {
     await user.save();
   } else { //Then it means that we have not active existing user that probably already had a token
     //If there is already a token for this user issued less than a minute ago, reject request
-    if (userWithSameUsername) {
-      user.password = data.password;
-      await user.save();
-    }
     let token = await Token.findOne({ userId: user._id, forReset: false });
     if (token && Date.now() - token.createdAt < 60 * 1000) { // a minute
       throw new ReqError('You already have a registration token issued less than a minute ago, please use it or try again later', 409);
@@ -66,7 +58,7 @@ const signup = async (data) => {
       {
         link: link,
       },
-      '../templates/registrationEmail.handlebar'
+      '../templates/registrationEmail.handlebar',
       );
   //Return success info
   return {success: true};
