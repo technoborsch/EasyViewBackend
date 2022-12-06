@@ -71,6 +71,10 @@ const projectDescriptionValidator = (description) => {
     return description.length < 500;
 };
 
+const buildingNameValidator = projectNameValidator;
+
+const buildingDescriptionValidator = projectDescriptionValidator;
+
 module.exports = {
     usernameValidator,
     nameValidator,
@@ -82,4 +86,6 @@ module.exports = {
     tokenHeaderValidator,
     projectNameValidator,
     projectDescriptionValidator,
+    buildingNameValidator,
+    buildingDescriptionValidator,
 };

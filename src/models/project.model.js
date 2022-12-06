@@ -10,6 +10,12 @@ const projectSchema = new Schema({
     description: {
         type: String,
     },
+    participants: {
+        type: [String],
+    },
+    buildings: {
+        type: [String],
+    },
     private: {
         type: Boolean,
         required: true,

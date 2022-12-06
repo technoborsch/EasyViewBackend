@@ -11,7 +11,7 @@ const {
 const {generateUserEmail} = require("../../../utils/GenerateUserEmail");
 const generateUsername = require('../../../utils/GenerateUsername');
 
-describe('Tests for project feature', () =>{
+describe('Tests for project feature', () => {
 
     const user1mail = generateUserEmail();
     const user1name = generateUsername();

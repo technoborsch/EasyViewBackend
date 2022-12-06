@@ -66,7 +66,11 @@ const editProject = async (id, data) => {
 };
 
 const deleteProject = async (id) => {
-    await Project.findByIdAndDelete(id);
+    const projectToDelete = await Project.findById(id);
+    if (!projectToDelete) {
+        throw new ReqError('There is no such project', 404);
+    }
+    await projectToDelete.deleteOne();
     return {success: true};
 };
 

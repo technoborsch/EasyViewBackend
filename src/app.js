@@ -20,6 +20,7 @@ const adminPassword = process.env['ADMIN_PASSWORD'];
 const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const projectRoutes = require('./routes/project.route');
+const buildingRoutes = require('./routes/building.route');
 
 const redisClient = require('./utils/RedisClient');
 
@@ -41,6 +42,7 @@ app.use(adminURL, admin({
 app.use('/api/v1', authRoutes);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', projectRoutes);
+app.use('/api/v1', buildingRoutes);
 
 app.use((error, req, res, next) => {
 	if (error.status) {
