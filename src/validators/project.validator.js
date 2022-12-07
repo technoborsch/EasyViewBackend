@@ -1,7 +1,8 @@
 const {bodyValidatorFactory} = require("../utils/ValidatorFactory");
 const {
     projectNameValidator,
-    projectDescriptionValidator
+    projectDescriptionValidator,
+    projectParticipantsValidator,
 } = require("./fieldValidators");
 const {
     isBoolean,
@@ -15,6 +16,7 @@ const createProjectValidator = (req, res, next) => {
     ], [
         ['description', projectDescriptionValidator],
         ['private', isBoolean],
+        ['participants', projectParticipantsValidator],
     ],
     );
     validateBody(req);
@@ -27,6 +29,7 @@ const editProjectValidator = (req, res, next) => {
             ['name', projectNameValidator],
             ['slug', isSlug],
             ['description', projectDescriptionValidator],
+            ['participants', projectParticipantsValidator],
         ]
     );
     validateBody(req);

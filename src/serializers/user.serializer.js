@@ -8,6 +8,6 @@ const userSerializer = (user) => ({
     isAdmin: user.isAdmin,
     isModerator: user.isModerator,
     isPremium: user.isPremium,
-});
+}); //TODO change serializer accordingly
 
 module.exports = userSerializer;

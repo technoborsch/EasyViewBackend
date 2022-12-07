@@ -71,6 +71,15 @@ const projectDescriptionValidator = (description) => {
     return description.length < 500;
 };
 
+const projectParticipantsValidator = (participants) => {
+    for (const username of participants) {
+        if (!usernameValidator(username)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 const buildingNameValidator = projectNameValidator;
 
 const buildingDescriptionValidator = projectDescriptionValidator;
@@ -88,4 +97,5 @@ module.exports = {
     projectDescriptionValidator,
     buildingNameValidator,
     buildingDescriptionValidator,
+    projectParticipantsValidator,
 };

@@ -47,13 +47,16 @@ const createProject = async (username, data) => {
     if (projectWithSameSlug) {
         throw new ReqError('You already have a project with the same slug', 409);
     }
-    return projectSerializer(await Project.create(projectData));
+    return projectSerializer(await Project.create(projectData)); //TODO add logic to premium
 };
 
 const editProject = async (id, data) => {
     const projectToEdit = await Project.findById(id);
     const author = projectToEdit.author;
     const projectWithThisName = await Project.findOne({author: author, name: data.name});
+    if (data.participants && data.participants.includes(projectToEdit.author)) {
+        throw new ReqError('You cannot set an author as a participant', 409);
+    }
     if (projectWithThisName) {
         throw new ReqError('You already have a project with name that you try to set', 409);
     }

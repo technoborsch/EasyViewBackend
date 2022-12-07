@@ -5,6 +5,6 @@ const projectSerializer = (project) => ({
     private: project.private,
     author: project.author,
     slug: project.slug,
-});
+}); //TODO change serializer accordingly
 
 module.exports = projectSerializer;

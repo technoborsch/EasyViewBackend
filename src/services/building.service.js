@@ -5,7 +5,7 @@ const buildingSerializer = require("../serializers/building.serializer");
 
 const getBuildingBySlug = async (username, projectSlug, buildingSlug) => {
     const project = await Project.findOne({author: username, slug: projectSlug});
-    if (!project) {
+    if (!project || project.isPrivate) {
         throw new ReqError('There is no such project', 404);
     }
     if (!project.buildings.includes(buildingSlug)) {
@@ -20,6 +20,10 @@ const getBuildingBySlug = async (username, projectSlug, buildingSlug) => {
 
 const getBuildingByID = async (id) => {
     const building = await Building.findById(id);
+    const project = await Project.findById(building.projectID);
+    if (project.isPrivate) {
+        throw new ReqError('There is no building with this ID', 404);
+    }
     if (!building) {
         throw new ReqError('There is no building with this ID', 404);
     }
@@ -28,14 +32,20 @@ const getBuildingByID = async (id) => {
 
 const createBuilding = async (author, data) => {
     const project = await Project.findById(data.projectID);
-    if (project.buildings.includes(data.name)) {
-        throw new ReqError('This project already has a building with same name, please choose another name', 409);
+    if (project.buildings.includes(data.slug)) {
+        throw new ReqError('This project already has a building with same slug, please set another slug', 409);
+    }
+    for (const buildingSlug of project.buildings) {
+        const building = await Building.findOne({projectID: project._id, slug: buildingSlug});
+        if (building.name === data.name) {
+            throw new ReqError('This project already has a building with same name, please set another name', 409);
+        }
     }
     const createdBuilding = new Building({...data, author: author});
     await createdBuilding.save();
     project.buildings.push(createdBuilding.slug);
     await project.save();
-    return buildingSerializer(createdBuilding);
+    return buildingSerializer(createdBuilding); //TODO add logic to premium
 };
 
 const editBuilding = async (id, data) => {
@@ -58,10 +68,13 @@ const editBuilding = async (id, data) => {
 
 const deleteBuilding = async (id) => {
     const buildingToDelete = await Building.findById(id);
+    const project = await Project.findById(buildingToDelete.projectID);
     if (!buildingToDelete) {
         throw new ReqError('There is no such building', 404);
     }
+    project.buildings.splice(project.buildings.indexOf(buildingToDelete.slug), 1);
     await buildingToDelete.deleteOne();
+    await project.save();
     return {success: true};
 };
 

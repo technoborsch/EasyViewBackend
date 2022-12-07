@@ -14,7 +14,7 @@ const projectSchema = new Schema({
         type: [String],
     },
     buildings: {
-        type: [String],
+        type: [String], //TODO make this contain IDs
     },
     private: {
         type: Boolean,
@@ -28,12 +28,15 @@ const projectSchema = new Schema({
     },
     slug: {
         type: String,
-        required: true,
+        required: true, //TODO make slug be automatically generated
     },
 }, {
     timestamps: true,
-});
+}); //TODO add methods to add/delete buildings
 
 const Project = mongoose.model('Project', projectSchema);
+
+//TODO add pre save hook to check if a user already have a project with same name
+//TODO add post deletion hook to delete all related objects on deletion
 
 module.exports = Project;

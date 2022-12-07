@@ -103,6 +103,12 @@ const userSchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    //TODO avatar
+    //TODO projects array with IDs of projects this user has created
+    //TODO participateInProjects array with IDs of projects a user participates in
+    //TODO add visibility field where user can set who can see his profile
+
+    //TODO add methods to add/delete projects
 },
 {
     timestamps: true,
@@ -116,5 +122,7 @@ userSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, Number(bcryptSalt));
     next();
 });
+
+//TODO add post deletion hook to delete all related objects to this user
 
 module.exports = mongoose.model('User', userSchema);
