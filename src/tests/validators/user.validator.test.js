@@ -9,6 +9,7 @@ describe('User profile updating data validation tests', () => {
             password: 'supaMegapassword77',
             name: 'John',
             lastName: 'Петренко',
+            visibility: 3,
         }, true],
         [{
         }, false],
@@ -35,7 +36,12 @@ describe('User profile updating data validation tests', () => {
             lastName: 'Петренко',
             ping: 'pong',
         }, false],
-
+                [{
+            password: 'supa4asswoRd',
+            name: 'John',
+            lastName: 'Петренко',
+            visibility: 44
+        }, false],
     ];
     test.each(cases)(
         'Validation of object with body attribute %p should not throw an error: %p', (body, result) => {

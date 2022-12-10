@@ -13,15 +13,15 @@ const onlyAuthorAndModerators = (modelName) => {
         return async (req, res, next) => {
         const authenticatedUser = req.user;
         let ObjectThatShouldBeChanged;
-        if (req.params.id) {
+        if (req.params.slug) {
+            ObjectThatShouldBeChanged = await model.findOne({author: req.params.id, slug: req.params.slug});
+        } else {
             ObjectThatShouldBeChanged = await model.findById(req.params.id);
-        } else if (req.params.username && req.params.slug) {
-            ObjectThatShouldBeChanged = await model.findOne({author: req.params.username, slug: req.params.slug});
         }
-        const authorUsername = ObjectThatShouldBeChanged.author;
+        const authorID = ObjectThatShouldBeChanged.author;
         if (!authenticatedUser.isAdmin
             && !authenticatedUser.isModerator
-            && authenticatedUser.username !== authorUsername
+            && authenticatedUser._id.toString() !== authorID.toString()
         ) { if (ObjectThatShouldBeChanged.private) {
             throw new ReqError('There is no such object', 404);
         } else {
@@ -36,7 +36,7 @@ const onlySelfAndModerators = async (req, res, next) => {
     const authenticatedUser = req.user;
     if (!authenticatedUser.isAdmin
         && !authenticatedUser.isModerator
-        && !authenticatedUser.username === req.params.username
+        && !authenticatedUser._id.toString() === req.params.id
     ) {
         throw new ReqError('You are not allowed to modify this user', 403);
     }

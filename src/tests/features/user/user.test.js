@@ -14,89 +14,102 @@ const {
     updateProfile,
     deleteProfile,
     getProtected,
-} = require('./user.request')
+} = require('./user.request');
 
-const email = generateUserEmail();
-const password = 'Verystrongpassword55';
-const username = generateUsername();
-const lastName = 'Petrovich';
+const {
+    expectError,
+    expectSuccess,
+    expectToReceiveObject, loginData,
+} = require('../../common');
 
-let accessToken;
+describe('Tests for users', () => {
 
-test('Retrieve an access token', async () => {
-    const data = await registerActivateAndLogin(email, username, password);
-    expect(data).toHaveProperty('user');
-    expect(data).toHaveProperty('accessToken');
-    expect(data).toHaveProperty('refreshToken');
-    accessToken = data.accessToken;
-});
+    const user = {
+        id: null,
+        email: generateUserEmail(),
+        username: generateUsername(),
+        name: null,
+        lastName: null,
+        about: null,
+        organization: null,
+        isAdmin: false,
+        isModerator: false,
+        isPremium: false,
+        visibility: 2,
+    };
 
-test('Retrieve data about myself', async () => {
-    const res = await getUserByUsername(username);
-    expect(res.status).toBe(200);
-    const userData = await res.json();
-    expect(userData).toHaveProperty('email', email);
-    expect(userData).toHaveProperty('username', username);
-    expect(userData).toHaveProperty('isAdmin', false);
-    expect(userData).toHaveProperty('isModerator', false);
-    expect(userData).toHaveProperty('isPremium', false);
-    expect(userData).not.toHaveProperty('password');
-    expect(userData).not.toHaveProperty('_v');
-});
+    let token;
+    const password = 'Verystrongpassword55';
+    let id;
 
-const newPassword = 'Evenmorestrongandmightypassword88';
-const newName = 'Ulfrich';
-const about = 'Its me';
-const organization = 'Microsoft'
+    beforeAll(async () => {
+        const data = await registerActivateAndLogin(user.email, user.username, password);
+        token = data.accessToken;
+    });
 
-test('Update profile and see changes', async () => {
-    const res = await updateProfile(accessToken, username, newName, newPassword, lastName, about, organization);
-    const userData = await res.json();
-    expect(res.status).toBe(200);
-    expect(userData).toHaveProperty('email', email);
-    expect(userData).toHaveProperty('username', username);
-    expect(userData).toHaveProperty('lastName', lastName);
-    expect(userData).toHaveProperty('name', newName);
-    expect(userData).toHaveProperty('about', about);
-    expect(userData).toHaveProperty('organization', organization);
-    expect(userData).toHaveProperty('isAdmin', false);
-    expect(userData).toHaveProperty('isModerator', false);
-    expect(userData).toHaveProperty('isPremium', false);
-    expect(userData).not.toHaveProperty('password');
-    expect(userData).not.toHaveProperty('_v');
-});
+    test('Retrieve data about myself', async () => {
+        const res = await getUserByUsername(user.username);
+        const receivedData = await expectToReceiveObject(res, user);
+        expect(receivedData).not.toHaveProperty('password');
+        expect(receivedData).not.toHaveProperty('_v');
+        id = receivedData.id;
+    });
 
-test('Check that user is able to login with new password', async () => {
-    const res = await signin(email, newPassword);
-    const resData = await res.json();
-    expect(res.status).toBe(200);
-    expect(resData).toHaveProperty('user');
-    expect(resData).toHaveProperty('accessToken');
-    expect(resData).toHaveProperty('refreshToken');
-});
+    const newPassword = 'Evenmorestrongandmightypassword88';
+    const update = {
+        name: 'Ulfrich',
+        about: 'Its me',
+        organization: 'Microsoft',
+        password: newPassword,
+    }
+    const updatedUser = {
+        ...user,
+        ...update,
+    };
+    delete updatedUser.password;
 
-test('Check that user is not able to login with old password', async () => {
-    const res = await signin(email, password);
-    const resData = await res.json();
-    expect(res.status).toBe(401);
-    expect(resData).toHaveProperty('error');
-});
+    test('Check that user is able to login', async () => {
+        const res = await signin(user.email, password);
+        const receivedData = await expectToReceiveObject(res, loginData);
+        token = receivedData.accessToken;
+    });
 
-test('Get user route should process random requests to get user adequately', async () => {
-    const res = await getUserByUsername('shaka laka');
-    const receivedData = await res.json();
-    expect(res.status).toBe(404);
-    expect(receivedData).toHaveProperty('error');
-});
+    test('Update profile and see changes', async () => {
+        const res = await updateProfile(token, id, update);
+        const receivedData = await expectToReceiveObject(res, updatedUser);
+        expect(receivedData).not.toHaveProperty('password');
+        expect(receivedData).not.toHaveProperty('_v');
+    });
 
-test('Delete profile', async () => {
-    const res = await deleteProfile(accessToken);
-    const resData = await res.json();
-    expect(res.status).toBe(200);
-    expect(resData).toHaveProperty('success', true);
-});
+    test('Check that user is able to login with new password', async () => {
+        const res = await signin(updatedUser.email, newPassword);
+        const receivedData = await expectToReceiveObject(res, loginData);
+        token = receivedData.accessToken;
+    });
 
-test('Not to be able to access protected pages', async () => {
-    const res = await getProtected(accessToken);
-    expect(res.status).toBe(401);
+    test('Check that user is not able to login with old password', async () => {
+        const res = await signin(updatedUser.email, password);
+        await expectError(res, 401);
+    });
+
+    test('Get user route should process random requests to get user adequately', async () => {
+        const res = await getUserByUsername('shaka laka');
+        await expectError(res, 404);
+    });
+
+    test('Delete profile', async () => {
+        const res = await deleteProfile(token);
+        await expectSuccess(res);
+    });
+
+    test('The profile is not accessible after deletion', async () => {
+        const res = await getUserByUsername(updatedUser.username);
+        await expectError(res, 404);
+    });
+
+    test('Not to be able to access protected pages with old token', async () => {
+        const res = await getProtected(token);
+        await expectError(res, 401);
+    });
+
 });

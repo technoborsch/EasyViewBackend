@@ -6,6 +6,9 @@ const {
     isSlug,
     isStrongPassword,
     isLength,
+    isInt,
+    isBoolean,
+    isMongoId,
 } = require('validator');
 
 const startsOrEndsWithWhiteSpace = (string) => {
@@ -41,6 +44,11 @@ const passwordValidator = (password) => {
     return isStrongPassword(password, {minSymbols: 0});
 };
 
+const visibilityValidator = (visibilityNumber) => {
+    if (!isInt('' + visibilityNumber)) {return false;}
+    return visibilityNumber >= 1 && visibilityNumber <= 3;
+}
+
 const loginHeaderValidator = (header) => {
     const splitHeader = header.split(" ");
     if (splitHeader.length !== 2) {return false;}
@@ -72,13 +80,18 @@ const projectDescriptionValidator = (description) => {
 };
 
 const projectParticipantsValidator = (participants) => {
-    for (const username of participants) {
-        if (!usernameValidator(username)) {
+    if (!Array.isArray(participants)) {return false;}
+    for (const userID of participants) {
+        if (!userID || !isMongoId('' + userID)) {
             return false;
         }
     }
     return true;
-}
+};
+
+const projectPrivateValidator = (isPrivate) => {
+    return isBoolean(isPrivate + ''); //TODO doesnt work as expected
+};
 
 const buildingNameValidator = projectNameValidator;
 
@@ -91,10 +104,12 @@ module.exports = {
     passwordValidator,
     aboutValidator,
     organizationValidator,
+    visibilityValidator,
     loginHeaderValidator,
     tokenHeaderValidator,
     projectNameValidator,
     projectDescriptionValidator,
+    projectPrivateValidator,
     buildingNameValidator,
     buildingDescriptionValidator,
     projectParticipantsValidator,

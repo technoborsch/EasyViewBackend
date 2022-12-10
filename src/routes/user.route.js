@@ -18,10 +18,10 @@ router.get('/user', auth, getUsersController);
 //Route used to get user profile by username
 router.get('/user/:username', getUserByUsernameController);
 //Route used to update authorized user's profile
-router.post('/user/:username', auth, onlySelfAndModerators, updateProfileValidator, updateProfileController);
+router.post('/user/:id', auth, onlySelfAndModerators, updateProfileValidator, updateProfileController);
 //Route used to delete authorized user and all his objects
-router.delete('/user/:username', auth, onlySelfAndModerators, deleteProfileController);
-//Just a little test route
+router.delete('/user', auth, onlySelfAndModerators, deleteProfileController);
+//Just a little test route TODO remove later
 router.get('/user/test/protected', auth, (req, res, next) => {return res.json({success: true})});
 
 module.exports = router;

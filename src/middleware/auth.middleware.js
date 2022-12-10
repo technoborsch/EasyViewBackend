@@ -104,7 +104,7 @@ const checkAndDecodeAttachedToken = async (req) => {
  * @returns {Promise<Object>} Promise with user if he exists
  */
 const checkIfUserExists = async (userId) => {
-    const user = await User.findOne({_id: userId});
+    const user = await User.findById(userId);
     if (!user || !user.isActive) {
         throw new ReqError('Trying to access data as non-existent user', 401);
     }

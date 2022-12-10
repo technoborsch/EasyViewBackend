@@ -21,37 +21,26 @@ const getUserByUsername = (username) => requestFactory(
  * Function that performs request to the server to edit user's profile
  *
  * @param {string} token Access token
- * @param {string} username Username of user that should be changed
- * @param {string} [name] New name
- * @param {string} [password] New password
- * @param {string} [lastName] New lastname
- * @param {string} [about] New about
- * @param {string} [organization] New organization
+ * @param {string} id User ID that should be changed
+ * @param {Object} data Data to update
  * @returns {Promise<Response>} Promise with response from server
  */
-const updateProfile = (token, username, name, password, lastName, about, organization) => requestFactory(
+const updateProfile = (token, id, data) => requestFactory(
     'post',
-    '/user/' + username,
+    '/user/' + id,
     token,
-    {
-        name: name,
-        lastName: lastName,
-        password: password,
-        about: about,
-        organization: organization,
-    }
+    data,
 );
 
 /***
  * Function that performs request to the server to delete user's profile
  *
  * @param {string} token Access token
- * @param {string} username Username of user that should be changed
  * @returns {Promise<Response>} Promise with response from server
  */
-const deleteProfile = (token, username) => requestFactory(
+const deleteProfile = (token) => requestFactory(
     'delete',
-    '/user/' + username,
+    '/user',
     token
 );
 

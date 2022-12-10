@@ -12,8 +12,8 @@ const getAllProjects = async () => {
     return serializedProjects;
 };
 
-const getAllMyProjects = async (username) => {
-    const projects = await Project.find({author: username});
+const getAllMyProjects = async (userID) => {
+    const projects = await Project.find({author: userID});
     const serializedProjects = [];
     for (const project of projects) {
         serializedProjects.push(projectSerializer(project));
@@ -21,59 +21,39 @@ const getAllMyProjects = async (username) => {
     return serializedProjects;
 };
 
-const getProjectByID = async (username, projectId) => {
+const getProjectByID = async (userID, projectId) => {
     const project = await Project.findOne({_id: projectId});
-    if (!project || (project.private && username && project.author !== username) || (project.private && !username)) {
+    if (!project || (project.private && userID && project.author.toString() !== userID.toString()) || (project.private && !userID)) {
         throw new ReqError('There is no project with such ID', 404);
     }
     return projectSerializer(project);
 };
 
-const getProjectBySlug = async (username, authorUsername, slug) => {
-    const project = await Project.findOne({author: authorUsername, slug: slug});
-    if (!project || (project.private && username && project.author !== username) || (project.private && !username)) {
+const getProjectBySlug = async (userID, authorID, slug) => {
+    const project = await Project.findOne({author: authorID, slug: slug});
+    if (!project || (project.private && userID && project.author.toString() !== userID.toString()) || (project.private && !userID)) {
         throw new ReqError('There is no project with such slug', 404);
     }
     return projectSerializer(project);
 };
 
-const createProject = async (username, data) => {
-    const projectData = {...data, author: username};
-    const projectWithSameName = await Project.findOne({author: username, name: data.name});
-    if (projectWithSameName) {
-        throw new ReqError('You already have a project with the same name', 409);
-    }
-    const projectWithSameSlug = await Project.findOne({author: username, slug: data.slug});
-    if (projectWithSameSlug) {
-        throw new ReqError('You already have a project with the same slug', 409);
-    }
-    return projectSerializer(await Project.create(projectData)); //TODO add logic to premium
+const createProject = async (userID, data) => {
+    const createdProject = new Project({...data, author: userID});
+    await createdProject.save();
+    return projectSerializer(createdProject); //TODO add logic to premium
 };
 
 const editProject = async (id, data) => {
     const projectToEdit = await Project.findById(id);
-    const author = projectToEdit.author;
-    const projectWithThisName = await Project.findOne({author: author, name: data.name});
-    if (data.participants && data.participants.includes(projectToEdit.author)) {
-        throw new ReqError('You cannot set an author as a participant', 409);
+    for (const attribute of Object.keys(data)) {
+        projectToEdit[attribute] = data[attribute];
     }
-    if (projectWithThisName) {
-        throw new ReqError('You already have a project with name that you try to set', 409);
-    }
-    const projectWithThisSlug = await Project.findOne({author: author, slug: data.slug});
-    if (projectWithThisSlug) {
-        throw new ReqError('You already have a project with slug that you try to set', 409);
-    }
-    await projectToEdit.updateOne(data);
-    return projectSerializer(await Project.findById(id));
+    await projectToEdit.save();
+    return projectSerializer(projectToEdit);
 };
 
 const deleteProject = async (id) => {
-    const projectToDelete = await Project.findById(id);
-    if (!projectToDelete) {
-        throw new ReqError('There is no such project', 404);
-    }
-    await projectToDelete.deleteOne();
+    await Project.findByIdAndDelete(id);
     return {success: true};
 };
 

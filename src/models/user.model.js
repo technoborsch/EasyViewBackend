@@ -9,6 +9,10 @@ const {
     organizationValidator,
 } = require('../validators/fieldValidators');
 const bcrypt = require('bcrypt');
+const Token = require("./token.model");
+const ReqError = require("../utils/ReqError");
+
+const Schema = mongoose.Schema;
 
 const bcryptSalt = process.env['BCRYPT_SALT'];
 
@@ -32,7 +36,7 @@ const bcryptSalt = process.env['BCRYPT_SALT'];
  * to a project and use some additional features.
  *
  */
-const userSchema = mongoose.Schema({
+const userSchema = new Schema({
     email: {
         type: String,
         unique: true,
@@ -64,28 +68,28 @@ const userSchema = mongoose.Schema({
         validate: {
             validator: nameValidator,
             message: () => 'This name is not valid name',
-        }
+        },
     },
     lastName: {
         type: String,
         validate: {
             validator: lastNameValidator,
             message: () => 'This lastname is not valid',
-        }
+        },
     },
     organization: {
         type: String,
         validate: {
             validator: organizationValidator,
             message: () => 'This organization name is not valid',
-        }
+        },
     },
     about: {
         type: String,
         validate: {
             validator: aboutValidator,
             message: () => 'This "about" is not valid',
-        }
+        },
     },
     isActive: {
         type: Boolean,
@@ -104,25 +108,95 @@ const userSchema = mongoose.Schema({
         default: false,
     },
     //TODO avatar
-    //TODO projects array with IDs of projects this user has created
-    //TODO participateInProjects array with IDs of projects a user participates in
-    //TODO add visibility field where user can set who can see his profile
-
-    //TODO add methods to add/delete projects
+    projects: {
+        type: [Schema.Types.ObjectId],
+    },
+    buildings: {
+        type: [Schema.Types.ObjectId],
+    },
+    participatesIn: {
+        type: [Schema.Types.ObjectId],
+    },
+    visibility: {
+        type: Number, //1 is visible to all, 2 is visible to authorized users, 3 is private
+        default: 2,
+    }
 },
 {
     timestamps: true,
+    methods: {
+        async addProject(projectToAdd) {
+            await this.checkIfProjectUnique(projectToAdd);
+            if (!this.projects.includes(projectToAdd)) {
+                this.projects.push(projectToAdd._id);
+                await this.save();
+            }
+        },
+        async removeProject(projectToRemove) {
+            this.projects = this.projects.splice(this.projects.indexOf(projectToRemove._id), 1);
+            await this.save();
+        },
+        async checkIfProjectUnique(projectToCheck) {
+            const Project = require("./project.model");
+
+            for (const projectID of this.projects) {
+                const project = await Project.findById(projectID);
+                if (project.name === projectToCheck.name) {
+                    throw new ReqError('This user already has a project with this name', 409);
+                } else if (project.slug === projectToCheck.slug) {
+                    throw new ReqError('This user already has a project with this slug', 409);
+                }
+            }
+        },
+        async addParticipatingProject(projectToAdd) {
+            if (!this.participatesIn.includes(projectToAdd._id)) {
+                this.participatesIn.push(projectToAdd._id);
+                await this.save();
+            }
+        },
+        async removeParticipatingProject(projectToRemove) {
+            if (this.participatesIn.includes(projectToRemove._id)) {
+                this.participatesIn = this.participatesIn.splice(this.participatesIn.indexOf(projectToRemove._id), 1);
+                await this.save();
+            }
+        },
+        async addBuilding(buildingToAdd) {
+            if (!this.buildings.includes(buildingToAdd._id)) {
+                this.buildings.push(buildingToAdd._id);
+                await this.save();
+            }
+        },
+        async removeBuilding(buildingToRemove) {
+            if (this.buildings.includes(buildingToRemove._id)) {
+                this.buildings.splice(this.buildings.indexOf(buildingToRemove._id), 1);
+                await this.save();
+            }
+        },
+    }
 });
 
 //Prior to saving, if password has changed, it has to be encrypted again
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) {
-        return next;
+userSchema.pre('save', async function () {
+    if (this.isModified('password')) {
+        this.password = await bcrypt.hash(this.password, Number(bcryptSalt));
     }
-    this.password = await bcrypt.hash(this.password, Number(bcryptSalt));
-    next();
 });
 
-//TODO add post deletion hook to delete all related objects to this user
+userSchema.pre(['deleteOne', 'deleteMany'], {document: true}, async function () {
+    //Delete all the projects that this user has created
+    const Project = require("./project.model");
+    for await (const projectID of this.projects) {
+        const project = await Project.findById(projectID);
+        await project.deleteOne();
+    }
+    //Delete all tokens issued for this user
+    await Token.deleteMany({userId: this._id});
+    //Delete this user as participant from all the projects he participated in
+    for await (const projectID of this.participatesIn) {
+        const project = await Project.findById(projectID);
+        project.participants.splice(project.participants.indexOf(this._id), 1);
+        await project.save();
+    }
+});
 
 module.exports = mongoose.model('User', userSchema);

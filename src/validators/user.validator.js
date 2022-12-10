@@ -5,6 +5,7 @@ const {
     lastNameValidator,
     aboutValidator,
     organizationValidator,
+    visibilityValidator,
 } = require("./fieldValidators");
 
 /**
@@ -29,6 +30,7 @@ const updateProfileValidator = (req, res, next) => {
         ['password', passwordValidator],
         ['about', aboutValidator],
         ['organization', organizationValidator],
+        ['visibility', visibilityValidator],
     ]);
     validateBody(req);
     next();

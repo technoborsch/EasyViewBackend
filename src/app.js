@@ -23,6 +23,7 @@ const projectRoutes = require('./routes/project.route');
 const buildingRoutes = require('./routes/building.route');
 
 const redisClient = require('./utils/RedisClient');
+const handleError = require("./utils/handleError");
 
 const app = express();
 const port = 8080;
@@ -44,13 +45,7 @@ app.use('/api/v1', userRoutes);
 app.use('/api/v1', projectRoutes);
 app.use('/api/v1', buildingRoutes);
 
-app.use((error, req, res, next) => {
-	if (error.status) {
-		res.status(error.status).json({ error: error.message })
-	} else {
-		res.status(500).json({ error: error.message });
-	}
-});
+app.use(handleError);
 
 mongoose.connect(
 	`mongodb://${dbUsername}:${dbPassword}@${dbHost}:${dbPort}/${dbDatabase}`,

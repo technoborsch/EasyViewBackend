@@ -11,26 +11,19 @@ describe('Project creating data validation tests', () => {
         [{
             name: 'First project',
             description: 'Very good and cool project',
-            slug: 'first_project',
             private: 'true',
         }, true],
         [{
             name: 'First project',
-            slug: 'first_project',
             private: 'true',
         }, true],
         [{
             name: 'First project',
             description: 'Very good and cool project',
-            slug: 'first_project',
         }, true],
         [{
             name: 'First project',
-            slug: 'first_project',
         }, true],
-        [{
-            name: 'First project',
-        }, false],
         [{}, false],
         ['nice body', false],
 
@@ -54,12 +47,10 @@ describe('Project edition data validation tests', () => {
         [{
             name: 'First project',
             description: 'Very good and cool project',
-            slug: 'first_project',
             private: 'true',
         }, false],
         [{
             name: 'First project',
-            slug: 'first_project',
         }, true],
         [{
             description: 'Very good and cool project',
@@ -67,7 +58,7 @@ describe('Project edition data validation tests', () => {
         [{
             name: 'First project',
             slug: 'first_project',
-        }, true],
+        }, false],
         [{
             name: 'First project',
         }, true],

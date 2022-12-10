@@ -1,7 +1,6 @@
 const {bodyValidatorFactory} = require('../utils/ValidatorFactory');
 const {buildingNameValidator, buildingDescriptionValidator} = require("./fieldValidators");
 const {
-    isSlug,
     isMongoId,
 } = require('validator');
 
@@ -10,7 +9,6 @@ const createBuildingValidator = (req, res, next) => {
         [
             ['name', buildingNameValidator],
             ['description', buildingDescriptionValidator],
-            ['slug', isSlug],
             ['projectID', isMongoId],
         ],
     );
@@ -23,8 +21,6 @@ const editBuildingValidator = (req, res, next) => {
         [
             ['name', buildingNameValidator],
             ['description', buildingDescriptionValidator],
-            ['slug', isSlug],
-            ['projectID', isMongoId],
         ],
     );
     validateBody(req);

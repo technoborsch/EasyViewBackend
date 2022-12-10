@@ -1,8 +1,6 @@
 const User = require('../models/user.model');
-const Token = require('../models/token.model');
 const userSerializer = require('../serializers/user.serializer');
 const ReqError = require("../utils/ReqError");
-const Project = require("../models/project.model");
 
 /**
  * Returns list of trimmed active users
@@ -34,23 +32,11 @@ const getUserByUsername = async (username) => {
  * @returns {Promise<{userSerializer}>} Promise with updated user's info
  */
 const updateProfile = async (data, user) => {
-    if (data.password) {
-        user.password = data.password;
+    for (const attribute of Object.keys(data)) {
+        user[attribute] = data[attribute];
     }
-    if (data.name) {
-        user.name = data.name;
-    }
-    if (data.lastName) {
-        user.lastName = data.lastName;
-    }
-    if (data.about) {
-        user.about = data.about;
-    }
-    if (data.organization) {
-        user.organization = data.organization;
-    }
-    const updatedUser = await user.save();
-    return userSerializer(updatedUser);
+    await user.save();
+    return userSerializer(user);
 };
 
 /**
@@ -60,11 +46,7 @@ const updateProfile = async (data, user) => {
  * @returns {Promise<{success: boolean}>} Promise with info whether deletion has been successful
  */
 const deleteProfile = async(user) => {
-    //No logic to check if user exists and is active because it has been already checked during authentication
-    await User.findByIdAndDelete(user._id);
-    //Delete all related objects
-    await Token.deleteMany({userId: user._id});
-    await Project.deleteMany({author: user.username});
+    await User.deleteOne({_id: user._id});
     return {success: true}
 };
 

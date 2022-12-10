@@ -20,7 +20,7 @@ const getBuildingByIDController = async (req, res, next) => {
 };
 const createBuildingController = async (req, res, next) => {
     const data = req.body;
-    const author = req.user.username;
+    const author = req.user._id;
     const createBuildingService = await createBuilding(author, data);
     return res.json(createBuildingService);
 };
