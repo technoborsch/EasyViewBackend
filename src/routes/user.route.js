@@ -1,12 +1,20 @@
 const express = require('express');
 
-const {auth,} = require('../middleware/auth.middleware');
+const {
+    auth,
+    optionalAuth,
+} = require('../middleware/auth.middleware');
 const {onlySelfAndModerators} = require('../middleware/author.middleware');
 
-const {updateProfileValidator} = require('../validators/user.validator');
+const {
+    getUserByUsernameValidator,
+    getUserByIDValidator,
+    updateProfileValidator,
+} = require('../validators/user.validator');
 const {
     getUsersController,
     getUserByUsernameController,
+    getUserByIDController,
     updateProfileController,
     deleteProfileController,
 } = require('../controllers/user.controller');
@@ -14,14 +22,49 @@ const {
 const router = express.Router();
 
 //Route used to get list of users
-router.get('/user', auth, getUsersController);
+router.get(
+    '/user',
+    optionalAuth,
+    getUsersController
+);
+
 //Route used to get user profile by username
-router.get('/user/:username', getUserByUsernameController);
+router.get(
+    '/user/username/:username',
+    optionalAuth,
+    getUserByUsernameValidator,
+    getUserByUsernameController
+);
+
+//Route used to get user profile by username
+router.get(
+    '/user/:id',
+    optionalAuth,
+    getUserByIDValidator,
+    getUserByIDController
+);
+
 //Route used to update authorized user's profile
-router.post('/user/:id', auth, onlySelfAndModerators, updateProfileValidator, updateProfileController);
+router.post(
+    '/user/:id',
+    auth,
+    onlySelfAndModerators, //TODO authorization in models
+    updateProfileValidator,
+    updateProfileController
+);
 //Route used to delete authorized user and all his objects
-router.delete('/user', auth, onlySelfAndModerators, deleteProfileController);
+router.delete(
+    '/user',
+    auth,
+    onlySelfAndModerators,
+    deleteProfileController);
+
 //Just a little test route TODO remove later
-router.get('/user/test/protected', auth, (req, res, next) => {return res.json({success: true})});
+router.get(
+    '/user/test/protected',
+    auth,
+    (req, res, next) => {
+        return res.json({success: true})
+    });
 
 module.exports = router;

@@ -26,6 +26,14 @@ const getUserByUsernameController = async (req, res) => {
     return res.json(userSerializer(user));
 };
 
+const getUserByIDController = async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user || !user.isActive) {
+        throw new ReqError('There is no such user', 404);
+    }
+    return res.json(userSerializer(user));
+};
+
 /***
  * A controller to manage requests to profile update URL
  *
@@ -58,6 +66,7 @@ const deleteProfileController = async (req, res) => {
 module.exports = {
     getUsersController,
     getUserByUsernameController,
+    getUserByIDController,
     updateProfileController,
     deleteProfileController
 };

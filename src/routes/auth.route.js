@@ -24,18 +24,48 @@ const {
 const router = express.Router();
 
 //Route used to signup new users
-router.post('/signup', signupValidator, signUpController);
+router.post(
+    '/signup',
+    signupValidator,
+    signUpController
+);
 //Route used to activate registered users
-router.post('/activate', activateValidator, activateUserController);
+router.post(
+    '/activate',
+    activateValidator,
+    activateUserController
+);
 //Route used to log in with email and password
-router.get('/signin', signinValidator, signInController);
+router.get(
+    '/signin',
+    signinValidator,
+    signInController
+);
 //Route used to log out of current session (technically blacklist current refresh token)
-router.get('/logout', logOutValidator, auth, logOutController);
+router.get(
+    '/logout',
+    auth,
+    logOutValidator,
+    logOutController
+);
 //Route used to request password resetting
-router.post('/resetPassword', resetPasswordRequestValidator, resetPasswordRequestController);
+router.post(
+    '/resetPassword',
+    resetPasswordRequestValidator,
+    resetPasswordRequestController
+);
 //Route used to confirm password resetting
-router.put('/resetPassword', resetPasswordValidator, resetPasswordController);
+router.put(
+    '/resetPassword',
+    resetPasswordValidator,
+    resetPasswordController
+);
 //Route used to refresh token
-router.get('/refreshToken', refreshTokenValidator, refreshAuth, refreshTokenController);
+router.get(
+    '/refreshToken',
+    refreshTokenValidator,
+    refreshAuth,
+    refreshTokenController
+);
 
 module.exports = router;

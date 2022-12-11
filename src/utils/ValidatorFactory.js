@@ -1,29 +1,31 @@
 const ReqError = require("./ReqError");
 
 /**
- * Factory that returns a function to check request body with given attributes, optional attributes and their validators.
- *
+ * Factory that returns a function to check request property (body, params) with given attributes, optional attributes and their validators.
+ * @param {string} requestPropertyToCheck A property of req object that should be validated.
  * @param {[[string, function]]} attributes An array of arrays in format: first element is string with an attribute that
  * must present in body and second element is validation function for this attribute.
  * @param {[[string, function]]} [optionalAttributes] An array of arrays in format: first element is string with an attribute
  * that can be in request body and second element is validation function for this attribute.
  * @returns {(function(*): void)|*} request body validator for given attributes
  */
-const bodyValidatorFactory = (attributes, optionalAttributes) => {
+const requestPropertyValidatorFactory = (requestPropertyToCheck, attributes, optionalAttributes) => {
     return function (req) {
-        if (!req.hasOwnProperty('body') || !req.body) throw new ReqError('Request must contain body', 400);
-        const data = req.body;
+        if (!req.hasOwnProperty(requestPropertyToCheck) || !req[requestPropertyToCheck]) {
+            throw new ReqError('Request must contain body', 400);
+        }
+        const data = req[requestPropertyToCheck];
         const providedNumberOfAttributes = Object.keys(data).length;
-        if (providedNumberOfAttributes === 0) throw new ReqError('No attributes have been provided in request data', 400)
+        if (providedNumberOfAttributes === 0) throw new ReqError(`No attributes have been provided in request ${requestPropertyToCheck}`, 400)
         if (attributes) {
             for (const attr of attributes) {
                 const attribute = attr[0];
                 const validatorFunction = attr[1];
                 if (!data.hasOwnProperty(attribute) || !data[attribute]) {
-                    throw new ReqError(`Request body must contain "${attribute}" attribute`, 400);
+                    throw new ReqError(`Request ${requestPropertyToCheck} must contain "${attribute}" attribute`, 400);
                 }
                 if (validatorFunction && !validatorFunction(data[attribute])) {
-                    throw new ReqError(`Not valid data has been provided in field "${attribute}"`, 400);
+                    throw new ReqError(`Not valid data has been provided in request ${requestPropertyToCheck} attribute "${attribute}"`, 400);
                 }
             }
         }
@@ -35,17 +37,20 @@ const bodyValidatorFactory = (attributes, optionalAttributes) => {
                 if (data.hasOwnProperty(attribute)) {
                     optionalsCounter++;
                     if (!data[attribute]) {
-                        throw new ReqError(`If attached, optional attribute "${attribute}" must be not empty`, 400);
+                        throw new ReqError(`If provided, optional attribute of 
+                        request ${requestPropertyToCheck} "${attribute}" must be not empty`, 400);
                     }
                     if (optionalAttributeValidator && !optionalAttributeValidator(data[attribute])) {
-                        throw new ReqError(`If attached, optional attribute "${attribute}" must contain valid data`, 400);
+                        throw new ReqError(`If provided, optional attribute of 
+                        request ${requestPropertyToCheck} "${attribute}" must contain valid data`, 400);
                     }
                 }
             }
         }
         const targetNumberOfAttributes = attributes.length + optionalsCounter;
         if (targetNumberOfAttributes !== providedNumberOfAttributes) {
-            throw new ReqError('Extra data was provided in body request, but it is not allowed', 400);
+            throw new ReqError(`Extra data was provided in 
+            request ${requestPropertyToCheck}, but it is not allowed`, 400);
         }
     };
 };
@@ -73,8 +78,6 @@ const headersValidatorFactory = (headers) => {
     };
 };
 
-//TODO paramsValidatorFactory
-
 /**
  * A simple function that validates that a request does not have body
  *
@@ -87,7 +90,7 @@ const validateThatBodyIsAbsent = (req) => {
 };
 
 module.exports = {
-    bodyValidatorFactory,
+    requestPropertyValidatorFactory,
     headersValidatorFactory,
     validateThatBodyIsAbsent,
 };

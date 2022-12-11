@@ -14,7 +14,7 @@ const getUsers = (token) => requestFactory(
 
 const getUserByUsername = (username) => requestFactory(
     'get',
-    '/user/' + username,
+    '/user/username/' + username,
 );
 
 /***

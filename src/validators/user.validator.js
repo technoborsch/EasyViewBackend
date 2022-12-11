@@ -1,4 +1,4 @@
-const {bodyValidatorFactory} = require("../utils/ValidatorFactory");
+const {requestPropertyValidatorFactory} = require("../utils/ValidatorFactory");
 const {
     nameValidator,
     passwordValidator,
@@ -6,7 +6,32 @@ const {
     aboutValidator,
     organizationValidator,
     visibilityValidator,
+    usernameValidator,
 } = require("./fieldValidators");
+const {isMongoId} = require("validator");
+
+const getUserByUsernameValidator = (req, res, next) => {
+    const validateParams = requestPropertyValidatorFactory(
+        'params',
+        [
+            ['username', usernameValidator],
+        ]
+    );
+    validateParams(req);
+    next();
+};
+
+const getUserByIDValidator = (req, res, next) => {
+    const validateParams = requestPropertyValidatorFactory(
+        'params',
+        [
+            ['id', isMongoId],
+        ]
+    );
+    validateParams(req);
+    next();
+};
+
 
 /**
  * Validator for requests to update profile.
@@ -23,7 +48,9 @@ const {
  * @param next Next function
  */
 const updateProfileValidator = (req, res, next) => {
-    const validateBody = bodyValidatorFactory([],
+    const validateBody = requestPropertyValidatorFactory(
+        'body',
+        [],
         [
         ['name', nameValidator],
         ['lastName', lastNameValidator],
@@ -31,9 +58,22 @@ const updateProfileValidator = (req, res, next) => {
         ['about', aboutValidator],
         ['organization', organizationValidator],
         ['visibility', visibilityValidator],
-    ]);
+    ]
+    );
+    const validateParams = requestPropertyValidatorFactory(
+        'params',
+        [
+            ['id', isMongoId],
+        ]
+    );
+    validateParams(req);
     validateBody(req);
     next();
 };
 
-module.exports = {updateProfileValidator};
+
+module.exports = {
+    getUserByUsernameValidator,
+    getUserByIDValidator,
+    updateProfileValidator,
+};

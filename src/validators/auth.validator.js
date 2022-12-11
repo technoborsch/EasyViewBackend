@@ -9,7 +9,7 @@ const {
     loginHeaderValidator,
 } = require('./fieldValidators')
 const {
-    bodyValidatorFactory,
+    requestPropertyValidatorFactory,
     headersValidatorFactory,
     validateThatBodyIsAbsent,
 } = require("../utils/ValidatorFactory");
@@ -24,7 +24,8 @@ const {
  * @param next Next function
  */
 const signupValidator = (req, res, next) => {
-    const validateBody = bodyValidatorFactory(
+    const validateBody = requestPropertyValidatorFactory(
+        'body',
         [
             ['email', isEmail],
             ['username', usernameValidator],
@@ -47,7 +48,8 @@ const signupValidator = (req, res, next) => {
  * @param next Next function
  */
 const activateValidator = (req, res, next) => {
-    const validateBody = bodyValidatorFactory(
+    const validateBody = requestPropertyValidatorFactory(
+        'body',
         [
             ['id', isMongoId],
             ['token', isHexadecimal],
@@ -86,7 +88,9 @@ const signinValidator = (req, res, next) => {
  * @param next Next function
  */
 const resetPasswordRequestValidator = (req, res, next) => {
-    const validateBody = bodyValidatorFactory([
+    const validateBody = requestPropertyValidatorFactory(
+        'body',
+        [
         ['email', isEmail],
     ]);
     validateBody(req);
@@ -106,7 +110,8 @@ const resetPasswordRequestValidator = (req, res, next) => {
  * @param next Next function
  */
 const resetPasswordValidator = (req, res, next) => {
-    const validateBody = bodyValidatorFactory(
+    const validateBody = requestPropertyValidatorFactory(
+        'body',
         [
             ['id', isMongoId],
             ['token', isHexadecimal],
