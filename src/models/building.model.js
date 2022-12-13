@@ -152,4 +152,4 @@ buildingSchema.post(['deleteOne', 'deleteMany'], {document: true}, async functio
 //TODO model file
 //TODO viewpoints list
 
-module.exports = mongoose.model('Building', buildingSchema);;
+module.exports = mongoose.model('Building', buildingSchema);

@@ -122,7 +122,10 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
     },
-    //TODO avatar
+    avatar: {
+        type: String, //Path to a file on SFTP/FTP/Cloud
+        default: null,
+    },
     projects: {
         type: [Schema.Types.ObjectId],
     },
