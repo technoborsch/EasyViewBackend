@@ -48,7 +48,7 @@ describe('Tests for users', () => {
     });
 
     test('Retrieve data about myself', async () => {
-        const res = await getUserByUsername(user.username);
+        const res = await getUserByUsername(token, user.username);
         const receivedData = await expectToReceiveObject(res, user);
         expect(receivedData).not.toHaveProperty('password');
         expect(receivedData).not.toHaveProperty('_v');
@@ -93,8 +93,8 @@ describe('Tests for users', () => {
     });
 
     test('Get user route should process random requests to get user adequately', async () => {
-        const res = await getUserByUsername('shaka laka');
-        await expectError(res, 404);
+        const res = await getUserByUsername('shaka laka', 'uga buga');
+        await expectError(res, 401);
     });
 
     test('Delete profile', async () => {
@@ -103,7 +103,7 @@ describe('Tests for users', () => {
     });
 
     test('The profile is not accessible after deletion', async () => {
-        const res = await getUserByUsername(updatedUser.username);
+        const res = await getUserByUsername(null, updatedUser.username);
         await expectError(res, 404);
     });
 

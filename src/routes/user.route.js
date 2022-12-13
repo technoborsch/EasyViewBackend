@@ -4,20 +4,13 @@ const {
     auth,
     optionalAuth,
 } = require('../middleware/auth.middleware');
-const {onlySelfAndModerators} = require('../middleware/author.middleware');
-
 const {
     getUserByUsernameValidator,
     getUserByIDValidator,
     updateProfileValidator,
+    deleteProfileValidator,
 } = require('../validators/user.validator');
-const {
-    getUsersController,
-    getUserByUsernameController,
-    getUserByIDController,
-    updateProfileController,
-    deleteProfileController,
-} = require('../controllers/user.controller');
+const User = require("../models/user.model");
 
 const router = express.Router();
 
@@ -25,7 +18,9 @@ const router = express.Router();
 router.get(
     '/user',
     optionalAuth,
-    getUsersController
+    async (req, res) => {
+        return res.json(await User._getList(req.user));
+    }
 );
 
 //Route used to get user profile by username
@@ -33,7 +28,9 @@ router.get(
     '/user/username/:username',
     optionalAuth,
     getUserByUsernameValidator,
-    getUserByUsernameController
+    async (req, res) => {
+        return res.json(await User._getByUsername(req.user, req.params.username));
+    }
 );
 
 //Route used to get user profile by username
@@ -41,23 +38,30 @@ router.get(
     '/user/:id',
     optionalAuth,
     getUserByIDValidator,
-    getUserByIDController
+    async (req, res) => {
+        return res.json(await User._getByID(req.user, req.params.id));
+    }
 );
 
-//Route used to update authorized user's profile
+//Route used to update user's profile
 router.post(
     '/user/:id',
     auth,
-    onlySelfAndModerators, //TODO authorization in models
     updateProfileValidator,
-    updateProfileController
+    async (req, res) => {
+        return res.json(await User._updateProfile(req.user, req.params.id, req.body));
+    }
 );
-//Route used to delete authorized user and all his objects
+
+//Route used to delete user by ID or authorized user if without ID
 router.delete(
-    '/user',
+    ['/user/:id', '/user'],
     auth,
-    onlySelfAndModerators,
-    deleteProfileController);
+    deleteProfileValidator,
+    async (req, res) => {
+        return res.json(await User._deleteProfile(req.user, req.params.id));
+    }
+);
 
 //Just a little test route TODO remove later
 router.get(

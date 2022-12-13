@@ -50,8 +50,8 @@ describe('Authentication, registration, activation, token refresh tests', () => 
         await expectError(res, 404);
     });
 
-    test('Try to get accout info while account is not already active', async () => {
-        const res = await getUserByUsername(username);
+    test('Try to get account info while account is not already active', async () => {
+        const res = await getUserByUsername(null, username);
         await expectError(res, 404);
     });
 
@@ -225,5 +225,9 @@ describe('Authentication, registration, activation, token refresh tests', () => 
     test('Refresh token also must not work', async () => {
         const res = await refreshToken(refreshingToken);
         await expectError(res, 401);
+    });
+
+    afterAll(async () => {
+        await deleteProfile(accessToken)
     });
 });

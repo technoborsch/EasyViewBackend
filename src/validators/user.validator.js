@@ -1,4 +1,7 @@
-const {requestPropertyValidatorFactory} = require("../utils/ValidatorFactory");
+const {
+    requestPropertyValidatorFactory,
+    validateThatBodyIsAbsent
+} = require("../utils/ValidatorFactory");
 const {
     nameValidator,
     passwordValidator,
@@ -71,9 +74,23 @@ const updateProfileValidator = (req, res, next) => {
     next();
 };
 
+const deleteProfileValidator = (req, res, next) => {
+
+    const validateParams = req.params.id ? requestPropertyValidatorFactory(
+        'params',
+        [],
+        [
+            ['id', isMongoId],
+        ]
+    ) : (req) => {};
+    validateParams(req);
+    validateThatBodyIsAbsent(req);
+    next();
+};
 
 module.exports = {
     getUserByUsernameValidator,
     getUserByIDValidator,
     updateProfileValidator,
+    deleteProfileValidator,
 };

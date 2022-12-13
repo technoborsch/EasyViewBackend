@@ -1,15 +1,8 @@
 const express = require('express');
 const {
-    signUpController,
-    signInController,
-    logOutController,
-    activateUserController,
-    resetPasswordRequestController,
-    resetPasswordController, refreshTokenController
-} = require("../controllers/auth.controller");
-const {
     auth,
     refreshAuth,
+    signInAuth,
 } = require("../middleware/auth.middleware");
 const {
     signupValidator,
@@ -20,6 +13,7 @@ const {
     resetPasswordRequestValidator,
     refreshTokenValidator,
 } = require("../validators/auth.validator");
+const User = require("../models/user.model");
 
 const router = express.Router();
 
@@ -27,45 +21,60 @@ const router = express.Router();
 router.post(
     '/signup',
     signupValidator,
-    signUpController
+    async (req, res) => {
+        return res.json(await User._signUp(req.body));
+    }
 );
 //Route used to activate registered users
 router.post(
     '/activate',
     activateValidator,
-    activateUserController
+    async (req, res) => {
+        return res.json(await User._activate(req.body));
+    }
 );
 //Route used to log in with email and password
 router.get(
     '/signin',
+    signInAuth,
     signinValidator,
-    signInController
+    async (req, res) => {
+        return res.json(await User._signIn(req.user));
+    }
 );
 //Route used to log out of current session (technically blacklist current refresh token)
 router.get(
     '/logout',
     auth,
     logOutValidator,
-    logOutController
+    async (req, res) => {
+        return res.json(await User._logOut(req.user, req.token));
+    }
 );
 //Route used to request password resetting
 router.post(
     '/resetPassword',
     resetPasswordRequestValidator,
-    resetPasswordRequestController
+    async (req, res) => {
+        return res.json(await User._requestPasswordReset(req.body));
+    }
 );
 //Route used to confirm password resetting
 router.put(
     '/resetPassword',
     resetPasswordValidator,
-    resetPasswordController
+    async (req, res) => {
+        return res.json(await User._resetPassword(req.body));
+    }
 );
 //Route used to refresh token
 router.get(
     '/refreshToken',
     refreshTokenValidator,
     refreshAuth,
-    refreshTokenController
+    async (req, res) => {
+        return res.json(await User._refreshToken(req.user, req.token));
+    }
 );
 
 module.exports = router;

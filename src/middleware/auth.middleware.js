@@ -3,6 +3,7 @@ const User = require('../models/user.model')
 const ReqError = require("../utils/ReqError");
 const {tokenHeaderValidator} = require("../validators/fieldValidators");
 const redis = require('../utils/RedisClient');
+const bcrypt = require("bcrypt");
 
 const JWTSecret = process.env['JWT_SECRET'];
 
@@ -37,6 +38,29 @@ const optionalAuth = async (req, res, next) => {
     } else {
         next();
     }
+};
+
+const signInAuth = async (req, res, next) => {
+    const header = req.get('Authorization');
+    const bearerString = header.split(' ');
+    const credentials = Buffer.from(bearerString[1], 'base64').toString('utf-8').split(':');
+    const emailOrUsername = credentials[0];
+    const password = credentials[1];
+
+    let user = await User.findOne({email: emailOrUsername});
+    if (!user) {
+        user = await User.findOne({username: emailOrUsername});
+    }
+    if (!user || !user.isActive) {
+        throw new ReqError('Wrong login-password pair', 401);
+    }
+    //If passwords don't match, reject request
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+        throw new ReqError('Wrong login-password pair', 401);
+    }
+    req.user = user;
+    next();
 };
 
 /***
@@ -114,5 +138,6 @@ const checkIfUserExists = async (userId) => {
 module.exports = {
     auth: authMiddleware,
     optionalAuth,
-    refreshAuth: refreshAuthMiddleware
+    refreshAuth: refreshAuthMiddleware,
+    signInAuth,
 };

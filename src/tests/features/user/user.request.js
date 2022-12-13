@@ -12,9 +12,10 @@ const getUsers = (token) => requestFactory(
     token,
 );
 
-const getUserByUsername = (username) => requestFactory(
+const getUserByUsername = (token, username) => requestFactory(
     'get',
     '/user/username/' + username,
+    token,
 );
 
 /***
@@ -36,11 +37,12 @@ const updateProfile = (token, id, data) => requestFactory(
  * Function that performs request to the server to delete user's profile
  *
  * @param {string} token Access token
+ * @param {string} [id] ID of a user that should be deleted, if no ID then deletes self
  * @returns {Promise<Response>} Promise with response from server
  */
-const deleteProfile = (token) => requestFactory(
+const deleteProfile = (token, id) => requestFactory(
     'delete',
-    '/user',
+    id? '/user/' + id : '/user',
     token
 );
 

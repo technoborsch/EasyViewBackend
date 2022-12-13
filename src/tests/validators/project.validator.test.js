@@ -68,7 +68,7 @@ describe('Project edition data validation tests', () => {
     ];
     test.each(cases)(
         'Validation of object with body attribute %p should not throw an error: %p', (body, result) => {
-            const req = {body: body};
+            const req = {body: body, params: {id: '6398483c4b16732ee22db0e0'}};
             if (result) {
                 expect(() => {editProjectValidator(req, res, next)}).not.toThrow(ReqError);
             } else {

@@ -142,7 +142,6 @@ describe('Tests for building feature', () => {
     });
 
     test('First user adds second user as a project participant', async () => {
-        console.log(update1);
         const res = await editProject(token1, project1.id, update1);
         project1 = await expectToReceiveObject(res, updatedProject1Data1);
     });

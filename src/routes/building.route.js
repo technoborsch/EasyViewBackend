@@ -1,19 +1,13 @@
 const express = require('express');
 const {auth, optionalAuth} = require("../middleware/auth.middleware");
 const {
-    getBuildingBySlugController,
-    getBuildingByIDController,
-    createBuildingController,
-    editBuildingController,
-    deleteBuildingController,
-} = require('../controllers/building.controller');
-const {
     getBuildingBySlugValidator,
     getBuildingByIDValidator,
     createBuildingValidator,
     editBuildingValidator,
     deleteBuildingValidator,
 } = require("../validators/building.validator");
+const Building = require('../models/building.model');
 
 const router = express.Router();
 
@@ -22,35 +16,47 @@ router.get(
     '/projects/:username/:projectSlug/buildings/:buildingSlug',
     optionalAuth,
     getBuildingBySlugValidator,
-    getBuildingBySlugController
+    async (req, res) => {
+        return res.json(await Building._getBySlug(
+                req.user,
+                req.params.username,
+                req.params.projectSlug,
+                req.params.buildingSlug
+            )
+        )
+    }
 );
+
 // Get building by ID
 router.get(
     '/buildings/:id',
     optionalAuth,
     getBuildingByIDValidator,
-    getBuildingByIDController
+    async (req, res) => { return res.json(await Building._getByID( req.user, req.params.id)) }
 );
+
 // Create building
 router.post(
     '/buildings',
     auth,
     createBuildingValidator,
-    createBuildingController
-); //TODO authorization for moderators, project author and project participants
+    async (req, res) => { return res.json(await Building._create( req.user, req.body )) }
+);
+
 // Edit building
 router.put(
     '/buildings/:id',
     auth,
     editBuildingValidator,
-    editBuildingController
-); //TODO authorization for moderators, author, project author and project participant
+    async (req, res) => { return res.json(await Building._update( req.user, req.params.id, req.body )) }
+);
+
 // Delete building
 router.delete(
     '/buildings/:id',
     auth,
     deleteBuildingValidator,
-    deleteBuildingController
-); //TODO authorization for moderators, author and project author
+    async (req, res) => { return res.json(await Building._delete( req.user, req.params.id )) }
+);
 
 module.exports = router;

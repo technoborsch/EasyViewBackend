@@ -12,7 +12,7 @@ const ReqError = require("./ReqError");
 const requestPropertyValidatorFactory = (requestPropertyToCheck, attributes, optionalAttributes) => {
     return function (req) {
         if (!req.hasOwnProperty(requestPropertyToCheck) || !req[requestPropertyToCheck]) {
-            throw new ReqError('Request must contain body', 400);
+            throw new ReqError(`Request must contain "${requestPropertyToCheck}" property`, 400);
         }
         const data = req[requestPropertyToCheck];
         const providedNumberOfAttributes = Object.keys(data).length;

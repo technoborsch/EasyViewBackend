@@ -1,20 +1,11 @@
-const express = require("express")
-const router = express.Router();
+const express = require("express");
 
-const {
-	getAllProjectsController,
-	getAllMyProjectsController,
-	getProjectByIDController,
-	getProjectBySlugController,
-	createProjectController,
-	editProjectController,
-	deleteProjectController,
-} = require('../controllers/project.controller');
+const Project = require('../models/project.model');
+const router = express.Router();
 const {
 	auth,
 	optionalAuth,
 } = require('../middleware/auth.middleware');
-const {onlyAuthorAndModerators} = require('../middleware/author.middleware');
 const {
 	getProjectBySlugValidator,
 	getProjectByIDValidator,
@@ -27,49 +18,62 @@ const {
 router.get(
 	'/projects',
 	optionalAuth,
-	getAllProjectsController
+	async (req, res) => {
+		return res.json(await Project._getList(req.user));
+	}
 );
 //Get all my projects
 router.get(
 	'/projects/my',
 	auth,
-	getAllMyProjectsController
+	async (req, res) => {
+		return res.json(await Project._getUserProjectsList(req.user));
+	}
 ); //TODO make "my" be a parameter to get all projects route
 // Get project by slug
 router.get(
 	'/projects/:username/:slug',
 	optionalAuth,
 	getProjectBySlugValidator,
-	getProjectBySlugController);
+	async (req, res) => {
+		return res.json(await Project._getBySlug(req.user, req.params.username, req.params.slug));
+	}
+);
 // Get project by ID
 router.get(
 	'/projects/:id',
 	optionalAuth,
 	getProjectByIDValidator,
-	getProjectByIDController,
+	async (req, res) => {
+		return res.json(await Project._getByID(req.user, req.params.id));
+	}
 );
 // Create project
 router.post(
 	'/projects',
 	auth,
 	createProjectValidator,
-	createProjectController
+	async (req, res) => {
+		return res.json(await Project._create(req.user, req.body));
+	}
 );
 // Edit project
 router.put(
 	'/projects/:id',
 	auth,
-	onlyAuthorAndModerators('project'), //TODO move authorization logic to models
 	editProjectValidator,
-	editProjectController
+	async (req, res) => {
+		return res.json(await Project._update(req.user, req.params.id, req.body));
+	}
 );
 // Delete project
 router.delete(
 	'/projects/:id',
 	auth,
-	onlyAuthorAndModerators('project'), //TODO move to models
 	deleteProjectValidator,
-	deleteProjectController
+	async (req, res) => {
+		return res.json(await Project._delete(req.user, req.params.id));
+	}
 );
 
 module.exports = router;

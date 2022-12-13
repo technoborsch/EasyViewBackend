@@ -16,7 +16,10 @@ const {
     expectToReceiveObject,
     expectToReceiveObjectArray,
 } = require('../../common');
-const {getUserByUsername} = require("../user/user.request");
+const {
+    getUserByUsername,
+    deleteProfile,
+} = require("../user/user.request");
 
 describe('Tests for project feature', () => {
 
@@ -102,7 +105,7 @@ describe('Tests for project feature', () => {
     };
 
     test('Assure that those projects present in users profile', async () => {
-        const res = await getUserByUsername(user1name);
+        const res = await getUserByUsername(token1, user1name);
         const receivedData = await expectToReceiveObject(res, userData);
         expect(receivedData.projects).toContain(project1.id);
         expect(receivedData.projects).toContain(project2.id);
@@ -117,9 +120,9 @@ describe('Tests for project feature', () => {
         await expectError(res, 409);
     });
 
-    test('First user gets all projects and sees there only a public project', async () => {
+    test('First user gets all projects and sees there both projects', async () => {
         const res = await getAllProjects(token1);
-        await expectToReceiveObjectArray(res, [project1Data]);
+        await expectToReceiveObjectArray(res, [project1Data, project2Data]);
     });
 
     test('First user gets their projects and sees there both projects', async () => {
@@ -144,12 +147,12 @@ describe('Tests for project feature', () => {
 
     test('It is not possible to get a private project by ID without authentication', async () => {
         const res = await getProjectById(null, project2.id);
-        await expectError(res, 404);
+        await expectError(res, 403);
     });
 
     test('It is not possible to get a private project by slug without authentication', async () => {
         const res = await getProjectBySlug(null, user1name, project2.slug);
-        await expectError(res, 404);
+        await expectError(res, 403);
     });
 
     test('Second user gets all projects and sees there only a public project too', async () => {
@@ -199,7 +202,7 @@ describe('Tests for project feature', () => {
 
     test('Second user is not able to get a private project by slug', async () => {
         const res = await getProjectBySlug(token2, user1name, project2.slug);
-        await expectError(res, 404);
+        await expectError(res, 403);
     });
 
     const update1 = {
@@ -253,7 +256,7 @@ describe('Tests for project feature', () => {
             description: 'Really nice project',
         }
         const res = await editProject(token2, project2.id, data);
-        await expectError(res, 404);
+        await expectError(res, 403);
     });
 
     test('Second user is not able to delete a public project', async () => {
@@ -263,7 +266,7 @@ describe('Tests for project feature', () => {
 
     test('Second user is not able to delete a private project', async () => {
         const res = await deleteProject(token2, project2.id);
-        await expectError(res, 404);
+        await expectError(res, 403);
     });
 
     test('First user deletes those two projects', async () => {
@@ -271,6 +274,11 @@ describe('Tests for project feature', () => {
         const res2 = await deleteProject(token1, project2.id);
         await expectSuccess(res1);
         await expectSuccess(res2);
+    });
+
+    afterAll(async () => {
+        await deleteProfile(token1);
+        await deleteProfile(token2);
     });
 
 });
