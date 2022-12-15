@@ -15,8 +15,12 @@ const requestFactory = (method, url, token, body, login, password) => {
         method: method,
     }
     if (body) {
-        init.body = JSON.stringify(body);
-        init.headers = { ...init.headers, 'Content-Type': 'application/json;charset=utf-8'};
+        if (body instanceof FormData) {
+            init.body = body;
+        } else {
+            init.body = JSON.stringify(body);
+            init.headers = { ...init.headers, 'Content-Type': 'application/json;charset=utf-8'};
+        }
     }
     if (token) {
         init.headers = { ...init.headers, 'Authorization': 'Token ' + token};

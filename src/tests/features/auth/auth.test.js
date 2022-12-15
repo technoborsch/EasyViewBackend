@@ -23,6 +23,7 @@ const {
 } = require('../../common');
 
 describe('Authentication, registration, activation, token refresh tests', () => {
+    jest.setTimeout(30000);
 
     const userEmail = generateUserEmail();
     let password = 'superStrongpassword88';

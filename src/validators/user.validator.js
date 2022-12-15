@@ -1,6 +1,7 @@
 const {
     requestPropertyValidatorFactory,
-    validateThatBodyIsAbsent
+    validateThatBodyIsAbsent,
+    uploadedFileValidatorFactory
 } = require("../utils/ValidatorFactory");
 const {
     nameValidator,
@@ -44,6 +45,7 @@ const getUserByIDValidator = (req, res, next) => {
  * "lastName" attribute with valid user's lastname;
  * "about" attribute with valid information about user;
  * "organization" attribute with valid information about user's organization;
+ * "visibility" attribute with desired visibility of user's profile
  * Any other attribute is not allowed.
  *
  * @param req Validated request
@@ -69,8 +71,14 @@ const updateProfileValidator = (req, res, next) => {
             ['id', isMongoId],
         ]
     );
-    validateParams(req);
-    validateBody(req);
+    const validateFile = uploadedFileValidatorFactory(
+        ['png', 'jpeg', 'jpg', 'gif'],
+        ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
+        10,
+    );
+    for (const validator of [validateBody, validateParams, validateFile]) {
+        validator(req);
+    }
     next();
 };
 

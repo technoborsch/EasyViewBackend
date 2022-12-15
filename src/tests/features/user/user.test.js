@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
 const generateUsername = require('../../../utils/GenerateUsername');
 
@@ -23,6 +25,7 @@ const {
 } = require('../../common');
 
 describe('Tests for users', () => {
+    jest.setTimeout(30000);
 
     const user = {
         id: null,
@@ -56,15 +59,21 @@ describe('Tests for users', () => {
     });
 
     const newPassword = 'Evenmorestrongandmightypassword88';
-    const update = {
+    const updateData = {
         name: 'Ulfrich',
         about: 'Its me',
         organization: 'Microsoft',
         password: newPassword,
-    }
+    };
+    const update = new FormData();
+    update.append('name', 'Ulfrich');
+    update.append('about', 'Its me');
+    update.append('organization', 'Microsoft');
+    update.append('password', 'Evenmorestrongandmightypassword88');
+    update.append('avatar', new Blob([fs.readFileSync(__dirname + '/image.png')], {type: 'image/png'}), 'image.png');
     const updatedUser = {
         ...user,
-        ...update,
+        ...updateData,
     };
     delete updatedUser.password;
 

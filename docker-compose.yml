@@ -36,3 +36,5 @@ services:
       - sftp
     env_file:
       - envfiles/api.env
+    volumes:
+      - ./uploads:/uploads

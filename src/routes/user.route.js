@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 
 const {
     auth,
@@ -13,6 +14,7 @@ const {
 const User = require("../models/user.model");
 
 const router = express.Router();
+const upload = multer({dest: '/uploads/tmp/avatar'});
 
 //Route used to get list of users
 router.get(
@@ -43,13 +45,24 @@ router.get(
     }
 );
 
+//Route used to get user avatar
+router.get(
+    '/user/:id/avatar',
+    optionalAuth,
+    getUserByIDValidator,
+    async (req, res) => {
+        return res.sendFile(await User._getAvatar(req.user, req.params.id));
+    }
+);
+
 //Route used to update user's profile
 router.post(
     '/user/:id',
     auth,
+    upload.single('avatar'),
     updateProfileValidator,
     async (req, res) => {
-        return res.json(await User._updateProfile(req.user, req.params.id, req.body));
+        return res.json(await User._updateProfile(req.user, req.params.id, req.body, req.file));
     }
 );
 

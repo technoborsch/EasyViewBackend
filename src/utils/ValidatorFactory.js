@@ -1,4 +1,5 @@
 const ReqError = require("./ReqError");
+const fs = require('fs');
 
 /**
  * Factory that returns a function to check request property (body, params) with given attributes, optional attributes and their validators.
@@ -21,7 +22,7 @@ const requestPropertyValidatorFactory = (requestPropertyToCheck, attributes, opt
             for (const attr of attributes) {
                 const attribute = attr[0];
                 const validatorFunction = attr[1];
-                if (!data.hasOwnProperty(attribute) || !data[attribute]) {
+                if (!Object.hasOwn(data, attribute) || !data[attribute]) {
                     throw new ReqError(`Request ${requestPropertyToCheck} must contain "${attribute}" attribute`, 400);
                 }
                 if (validatorFunction && !validatorFunction(data[attribute])) {
@@ -34,7 +35,7 @@ const requestPropertyValidatorFactory = (requestPropertyToCheck, attributes, opt
             for (const optionalAttrArray of optionalAttributes) {
                 const attribute = optionalAttrArray[0];
                 const optionalAttributeValidator = optionalAttrArray[1];
-                if (data.hasOwnProperty(attribute)) {
+                if (Object.hasOwn(data, attribute)) {
                     optionalsCounter++;
                     if (!data[attribute]) {
                         throw new ReqError(`If provided, optional attribute of 
@@ -79,6 +80,37 @@ const headersValidatorFactory = (headers) => {
 };
 
 /**
+ * Factory to create attached file validators
+ *
+ * @param {String[]} acceptableExtensions List of acceptable extensions without dots like ['jpeg', 'jpg']
+ * @param {String[]} acceptableMimetypes List of acceptable mimetypes like ['image/jpeg', 'image/jpg']
+ * @param {Number} maximumFilesize Maximum allowable size of uploaded file in megabytes
+ * @returns {(function(*): void)|*} Returns a function that checks request with given parameters and throws an error if
+ * something is wrong with the file
+ */
+const uploadedFileValidatorFactory = (acceptableExtensions, acceptableMimetypes, maximumFilesize) => {
+    return function (req) {
+        if (req.file) { // Not validate if no file is attached
+            const fileExtension = req.file.originalname.slice(
+                ((req.file.originalname.lastIndexOf('.') - 1) >>> 0) + 2
+            );
+            if (!acceptableExtensions.includes(fileExtension)) {
+                fs.rmSync(req.file.path);
+                throw new ReqError('The extension of the uploaded file is not acceptable', 400);
+            }
+            if (!acceptableMimetypes.includes(req.file.mimetype)) {
+                fs.rmSync(req.file.path);
+                throw new ReqError('The mimetype of the uploaded file is not acceptable', 400);
+            }
+            if (req.file.size / (1024 * 1024) > maximumFilesize) {
+                fs.rmSync(req.file.path);
+                throw new ReqError(`Uploaded file is too big, maximum size is ${maximumFilesize} MB`, 400);
+            }
+        }
+    }
+}
+
+/**
  * A simple function that validates that a request does not have body
  *
  * @param {Object} req Request that should be validated
@@ -92,5 +124,6 @@ const validateThatBodyIsAbsent = (req) => {
 module.exports = {
     requestPropertyValidatorFactory,
     headersValidatorFactory,
+    uploadedFileValidatorFactory,
     validateThatBodyIsAbsent,
 };

@@ -1,3 +1,4 @@
+const fs = require('fs');
 const mongoose = require('mongoose');
 const {isEmail} = require('validator');
 const bcrypt = require('bcrypt');
@@ -181,12 +182,18 @@ const userSchema = new Schema({
                 return requestedUser.serialize(user);
             }
         },
-        async _updateProfile(user, id, data) {
+        async _getAvatar(user, id) {
+            const profileToGetAvatar = await this.findById(id);
+            profileToGetAvatar.authorizeTo(user, 'read');
+            return profileToGetAvatar.avatar;
+        },
+        async _updateProfile(user, id, data, uploadedAvatar) {
             const profileToUpdate = await this.findById(id);
             profileToUpdate.authorizeTo(user, 'update');
             for (const attribute of Object.keys(data)) {
                 profileToUpdate[attribute] = data[attribute];
             }
+            if (uploadedAvatar) {await profileToUpdate.handleNewAvatar(uploadedAvatar);}
             await profileToUpdate.save();
             const savedUser = await this.findById(profileToUpdate._id);
             return savedUser.serialize(savedUser);
@@ -427,6 +434,12 @@ const userSchema = new Schema({
                 this.buildings.splice(this.buildings.indexOf(buildingToRemove._id), 1);
                 await this.save();
             }
+        },
+        async handleNewAvatar(uploadedAvatar) {
+            const savePath = `/uploads/users/${this._id.toString()}/${uploadedAvatar.originalname}`;
+            fs.cpSync(uploadedAvatar.path, savePath);
+            fs.rmSync(uploadedAvatar.path);
+            this.avatar = savePath; //No save call
         },
         authorizeTo(user, isAuthorizedTo) {
             switch (isAuthorizedTo) {

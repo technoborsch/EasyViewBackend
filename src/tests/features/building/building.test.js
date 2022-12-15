@@ -26,6 +26,7 @@ const generateUsername = require('../../../utils/GenerateUsername');
 const {deleteProfile} = require("../user/user.request");
 
 describe('Tests for building feature', () => {
+    jest.setTimeout(30000);
 
     const email1 = generateUserEmail();
     const email2 = generateUserEmail();

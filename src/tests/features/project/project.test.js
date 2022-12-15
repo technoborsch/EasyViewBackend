@@ -22,6 +22,7 @@ const {
 } = require("../user/user.request");
 
 describe('Tests for project feature', () => {
+    jest.setTimeout(30000);
 
     const user1mail = generateUserEmail();
     const user1name = generateUsername();
