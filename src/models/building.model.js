@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const slugify = require("slugify");
 const ReqError = require("../utils/ReqError");
+const fs = require("fs");
+
+const host = process.env['HOST'];
+const port = process.env['PORT'];
+const isTLS = Boolean(Number.parseInt(process.env['TLS'])); //TODO get envs in one file and export?
 
 const Schema = mongoose.Schema;
 
@@ -13,6 +18,9 @@ const buildingSchema = new Schema({
         type: String,
     },
     slug: {
+        type: String,
+    },
+    model: {
         type: String,
     },
     projectID: {
@@ -45,15 +53,21 @@ const buildingSchema = new Schema({
             await building.authorizeTo(user, 'read');
             return building.serialize();
         },
-        async _create(user, data) {
+        async _getModel(user, id) {
+            const buildingToGetModel = await this.findById(id);
+            await buildingToGetModel.authorizeTo(user, 'read');
+            return buildingToGetModel.model;
+        },
+        async _create(user, data, uploadedModel) {
             //TODO add logic to premium
             //TODO authorization to create buildings (for participants etc)
             const createdBuilding = new this({...data, author: user._id});
+            if (uploadedModel) {createdBuilding.handleUploadedModel(uploadedModel);}
             await createdBuilding.save();
             const savedBuilding = await this.findById(createdBuilding._id);
             return savedBuilding.serialize();
         },
-        async _update(user, id, data) {
+        async _update(user, id, data, uploadedModel) {
             const buildingToEdit = await this.findById(id);
             await buildingToEdit.authorizeTo(user, 'update');
             for (const attribute of Object.keys(data)) {
@@ -71,6 +85,16 @@ const buildingSchema = new Schema({
         },
     },
     methods: {
+        handleUploadedModel(model) {
+            const savePath = `/uploads/buildings/${this._id.toString()}/${model.originalname}`;
+            fs.cpSync(model.path, savePath); //TODO Sync is bad you know
+            fs.rmSync(model.path);
+            this.avatar = savePath; //No save call
+        },
+        getModelURL() {
+            const protocol = isTLS ? 'https' : 'http';
+            return `${protocol}://${host}:${port}/api/v1/buildings/${this._id.toString()}/model`;
+        },
         async authorizeTo(user, isAuthorizedTo) {
             const Project = require('../models/project.model');
             const projectOfBuilding = await Project.findById(this.projectID);
@@ -111,6 +135,7 @@ const buildingSchema = new Schema({
             return {
                 id: this._id,
                 name: this.name,
+                model: this.model ? this.getModelURL() : null,
                 description: this.description? this.description : null,
                 slug: this.slug,
                 projectID: this.projectID,

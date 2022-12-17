@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+
 const {auth, optionalAuth} = require("../middleware/auth.middleware");
 const {
     getBuildingBySlugValidator,
@@ -10,6 +12,7 @@ const {
 const Building = require('../models/building.model');
 
 const router = express.Router();
+const upload = multer({dest: '/uploads/tmp/models'});
 
 // Get building by slug
 router.get(
@@ -32,23 +35,33 @@ router.get(
     '/buildings/:id',
     optionalAuth,
     getBuildingByIDValidator,
-    async (req, res) => { return res.json(await Building._getByID( req.user, req.params.id)) }
+    async (req, res) => { return res.json(await Building._getByID( req.user, req.params.id )) }
+);
+
+//Get a model of a building
+router.get(
+    '/buildings/:id/model',
+    optionalAuth,
+    getBuildingByIDValidator,
+    async (req, res) => { return res.sendFile(await Building._getModel( req.user, req.params.id )) }
 );
 
 // Create building
 router.post(
     '/buildings',
     auth,
+    upload.single('model'),
     createBuildingValidator,
-    async (req, res) => { return res.json(await Building._create( req.user, req.body )) }
+    async (req, res) => { return res.json(await Building._create( req.user, req.body, req.file )) }
 );
 
 // Edit building
 router.put(
     '/buildings/:id',
     auth,
+    upload.single('model'),
     editBuildingValidator,
-    async (req, res) => { return res.json(await Building._update( req.user, req.params.id, req.body )) }
+    async (req, res) => { return res.json(await Building._update( req.user, req.params.id, req.body, req.file )) }
 );
 
 // Delete building

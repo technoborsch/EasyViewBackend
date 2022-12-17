@@ -442,7 +442,7 @@ const userSchema = new Schema({
         },
         async handleNewAvatar(uploadedAvatar) {
             const savePath = `/uploads/users/${this._id.toString()}/${uploadedAvatar.originalname}`;
-            fs.cpSync(uploadedAvatar.path, savePath);
+            fs.cpSync(uploadedAvatar.path, savePath); //TODO make it work with just cp without sync
             fs.rmSync(uploadedAvatar.path);
             this.avatar = savePath; //No save call
         },
@@ -466,7 +466,7 @@ const userSchema = new Schema({
                     throw new Error('Wrong action was provided');
             }
         },
-        serialize(forWho) {
+        serialize(forWho) { //TODO DRY this serializer
             if (!forWho && this.visibility === 1) {
                 return {
                     id: this._id,
@@ -479,7 +479,7 @@ const userSchema = new Schema({
                     projects: this.projects,
                     buildings: this.buildings,
                     participatesIn: this.participatesIn,
-                    avatar: this.getAvatarURL(),
+                    avatar: this.avatar? this.getAvatarURL() : null,
                 }
             } else {
                 if (this._id.toString() === forWho._id.toString()
@@ -501,7 +501,7 @@ const userSchema = new Schema({
                         buildings: this.buildings,
                         participatesIn: this.participatesIn,
                         visibility: this.visibility,
-                        avatar: this.getAvatarURL(),
+                        avatar: this.avatar? this.getAvatarURL() : null,
                     }
                 } else {
                     if (this.visibility === 3) {
@@ -521,7 +521,7 @@ const userSchema = new Schema({
                             projects: this.projects,
                             buildings: this.buildings,
                             participatesIn: this.participatesIn,
-                            avatar: this.getAvatarURL(),
+                            avatar: this.avatar? this.getAvatarURL() : null,
                         }
                     }
                 }

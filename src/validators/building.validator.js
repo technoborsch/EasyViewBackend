@@ -1,4 +1,7 @@
-const {requestPropertyValidatorFactory} = require('../utils/ValidatorFactory');
+const {
+    requestPropertyValidatorFactory,
+    uploadedFileValidatorFactory,
+} = require('../utils/ValidatorFactory');
 const {
     buildingNameValidator,
     buildingDescriptionValidator,
@@ -42,7 +45,13 @@ const createBuildingValidator = (req, res, next) => {
             ['projectID', isMongoId],
         ],
     );
+    const validateUpload = uploadedFileValidatorFactory(
+        ['ifc'],
+        ['application/x-step'],
+        500,
+    );
     validateBody(req);
+    validateUpload(req);
     next();
 };
 
@@ -61,8 +70,14 @@ const editBuildingValidator = (req, res, next) => {
             ['id', isMongoId],
         ]
     );
+    const validateUpload = uploadedFileValidatorFactory(
+        ['ifc'],
+        ['application/x-step'],
+        500,
+    );
     validateParams(req);
     validateBody(req);
+    validateUpload(req);
     next();
 };
 
