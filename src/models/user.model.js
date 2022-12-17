@@ -18,6 +18,9 @@ const {
     organizationValidator,
 } = require('../validators/fieldValidators');
 
+const host = process.env['HOST'];
+const port = process.env['PORT'];
+const isTLS = Boolean(Number.parseInt(process.env['TLS']));
 
 const bcryptSalt = process.env['BCRYPT_SALT'];
 const JWTSecret = process.env['JWT_SECRET'];
@@ -184,7 +187,9 @@ const userSchema = new Schema({
         },
         async _getAvatar(user, id) {
             const profileToGetAvatar = await this.findById(id);
-            profileToGetAvatar.authorizeTo(user, 'read');
+            if (!profileToGetAvatar.serialize(user).hasOwnProperty('avatar')) {
+                throw new ReqError('You are not authorized to get this user avatar', 403);
+            }
             return profileToGetAvatar.avatar;
         },
         async _updateProfile(user, id, data, uploadedAvatar) {
@@ -202,7 +207,7 @@ const userSchema = new Schema({
             const profileToDelete = id? await this.findById(id) : user;
             profileToDelete.authorizeTo(user, 'delete');
             await this.findByIdAndDelete(user._id);
-            return {success: true};
+            return {success: true}; //TODO this doesnt work
         },
         async _signUp(data) {
             let user = await this.findOne({ email: data.email});
@@ -441,6 +446,10 @@ const userSchema = new Schema({
             fs.rmSync(uploadedAvatar.path);
             this.avatar = savePath; //No save call
         },
+        getAvatarURL() {
+            const protocol = isTLS ? 'https' : 'http';
+            return `${protocol}://${host}:${port}/api/v1/user/${this._id.toString()}/avatar`;
+        },
         authorizeTo(user, isAuthorizedTo) {
             switch (isAuthorizedTo) {
                 case 'update': //Admin, moderators and user themselves
@@ -470,6 +479,7 @@ const userSchema = new Schema({
                     projects: this.projects,
                     buildings: this.buildings,
                     participatesIn: this.participatesIn,
+                    avatar: this.getAvatarURL(),
                 }
             } else {
                 if (this._id.toString() === forWho._id.toString()
@@ -491,6 +501,7 @@ const userSchema = new Schema({
                         buildings: this.buildings,
                         participatesIn: this.participatesIn,
                         visibility: this.visibility,
+                        avatar: this.getAvatarURL(),
                     }
                 } else {
                     if (this.visibility === 3) {
@@ -510,6 +521,7 @@ const userSchema = new Schema({
                             projects: this.projects,
                             buildings: this.buildings,
                             participatesIn: this.participatesIn,
+                            avatar: this.getAvatarURL(),
                         }
                     }
                 }
@@ -540,6 +552,8 @@ userSchema.pre(['deleteOne', 'deleteMany'], {document: true}, async function () 
         project.participants.splice(project.participants.indexOf(this._id), 1);
         await project.save();
     }
+    //Delete his avatar
+    await fs.rmSync(this.avatar);
 });
 
 module.exports = mongoose.model('User', userSchema);

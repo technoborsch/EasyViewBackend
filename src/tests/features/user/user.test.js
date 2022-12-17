@@ -1,4 +1,6 @@
 const fs = require('fs');
+const { Readable } = require('stream');
+const { finished } = require('stream/promises');
 
 const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
 const generateUsername = require('../../../utils/GenerateUsername');
@@ -13,6 +15,7 @@ const {
 
 const {
     getUserByUsername,
+    getAvatar,
     updateProfile,
     deleteProfile,
     getProtected,
@@ -56,6 +59,7 @@ describe('Tests for users', () => {
         expect(receivedData).not.toHaveProperty('password');
         expect(receivedData).not.toHaveProperty('_v');
         id = receivedData.id;
+        updatedUser.avatar = `http://127.0.0.1:8020/api/v1/user/${id}/avatar`;
     });
 
     const newPassword = 'Evenmorestrongandmightypassword88';
@@ -90,6 +94,14 @@ describe('Tests for users', () => {
         expect(receivedData).not.toHaveProperty('_v');
     });
 
+    test('Get avatar and assure that it is equal to a file that has been sent', async () => {
+        const stream = fs.createWriteStream(__dirname + '/avatar.png');
+        const res = await getAvatar(token, id);
+        const webStream = await res.body;
+        await finished(Readable.fromWeb(webStream).pipe(stream));
+        expect(fs.readFileSync(__dirname + '/image.png')).toEqual(fs.readFileSync(__dirname + '/avatar.png'));
+    });
+
     test('Check that user is able to login with new password', async () => {
         const res = await signin(updatedUser.email, newPassword);
         const receivedData = await expectToReceiveObject(res, loginData);
@@ -119,6 +131,10 @@ describe('Tests for users', () => {
     test('Not to be able to access protected pages with old token', async () => {
         const res = await getProtected(token);
         await expectError(res, 401);
+    });
+
+    afterAll(async () => {
+        await fs.rmSync(__dirname + '/avatar.png');
     });
 
 });

@@ -18,6 +18,12 @@ const getUserByUsername = (token, username) => requestFactory(
     token,
 );
 
+const getAvatar = (token, id) => requestFactory(
+    'get',
+    '/user/' + id + '/avatar',
+    token,
+);
+
 /***
  * Function that performs request to the server to edit user's profile
  *
@@ -55,6 +61,7 @@ const getProtected = (token) => requestFactory(
 module.exports = {
     getUsers,
     getUserByUsername,
+    getAvatar,
     updateProfile,
     deleteProfile,
     getProtected
