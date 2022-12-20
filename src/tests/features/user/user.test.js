@@ -134,7 +134,7 @@ describe('Tests for users', () => {
     });
 
     afterAll(async () => {
-        //Nothing to tear down after this test suit
+        await fs.rmSync(__dirname + '/avatar.png');
     });
 
 });
