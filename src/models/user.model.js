@@ -33,6 +33,9 @@ const privateProjectsPerPremiumUser = Number.parseInt(process.env['PRIVATE_PROJE
 const publicProjectsPerFreeUser = Number.parseInt(process.env['PUBLIC_PROJECTS_PER_FREE_USER']);
 const publicProjectsPerPremiumUser = Number.parseInt(process.env['PUBLIC_PROJECTS_PER_PREMIUM_USER']);
 
+const buildingsPerProjectForFreeUser = Number.parseInt(process.env['BUILDINGS_PER_PROJECT_FOR_FREE_USER']);
+const buildingsPerProjectForPremiumUser = Number.parseInt(process.env['BUILDINGS_PER_PROJECT_FOR_PREMIUM_USER']);
+
 const Schema = mongoose.Schema;
 
 /**
@@ -391,6 +394,19 @@ const userSchema = new Schema({
                 }
             }
         },
+        async _checkIfAbleToAddBuilding(user, project) {
+            //For author only, participants cant create buildings but can edit existing ones
+            if (project.author.toString() === user._id.toString()) {
+                if (user.isPremium && project.buildings.length >= buildingsPerProjectForPremiumUser) {
+                    throw new ReqError('Sorry, you are not able to add more buildings to this project', 409);
+                } else if (!user.isPremium && project.buildings.length >= buildingsPerProjectForFreeUser) {
+                    throw new ReqError('Sorry, you are not able to add more buildings to this project, you can buy premium ' +
+                        'to be able to add up to 100 buildings', 409);
+                }
+            } else {
+                throw new ReqError('You cannot add buildings to this project, ask project owner to add a building', 409);
+            }
+        },
     },
     methods: {
         async addProject(projectToAdd) {
@@ -442,8 +458,8 @@ const userSchema = new Schema({
         },
         async handleNewAvatar(uploadedAvatar) {
             const savePath = `/uploads/users/${this._id.toString()}/${uploadedAvatar.originalname}`;
-            fs.cpSync(uploadedAvatar.path, savePath); //TODO make it work with just cp without sync
-            fs.rmSync(uploadedAvatar.path);
+            await fs.promises.cp(uploadedAvatar.path, savePath);
+            await fs.promises.rm(uploadedAvatar.path);
             this.avatar = savePath; //No save call
         },
         getAvatarURL() {
@@ -466,66 +482,37 @@ const userSchema = new Schema({
                     throw new Error('Wrong action was provided');
             }
         },
-        serialize(forWho) { //TODO DRY this serializer
-            if (!forWho && this.visibility === 1) {
-                return {
-                    id: this._id,
-                    username: this.username,
-                    name: this.name? this.name : null,
-                    lastName: this.lastName? this.lastName : null,
-                    organization: this.organization? this.organization : null,
-                    about: this.about? this.about : null,
-                    isPremium: this.isPremium,
-                    projects: this.projects,
-                    buildings: this.buildings,
-                    participatesIn: this.participatesIn,
-                    avatar: this.avatar? this.getAvatarURL() : null,
-                }
-            } else {
-                if (this._id.toString() === forWho._id.toString()
+        serialize(forWho) {
+            const dataForEveryone = {
+                id: this._id,
+                username: this.username,
+            };
+            const dataToOtherUsers = {
+                ...dataForEveryone,
+                name: this.name? this.name : null,
+                lastName: this.lastName? this.lastName : null,
+                organization: this.organization? this.organization : null,
+                about: this.about? this.about : null,
+                isPremium: this.isPremium,
+                projects: this.projects,
+                buildings: this.buildings,
+                participatesIn: this.participatesIn,
+                avatar: this.avatar? this.getAvatarURL() : null,
+            };
+            const dataToSelfAndModerators = {
+                ...dataToOtherUsers,
+                email: this.email,
+                isAdmin: this.isAdmin,
+                isModerator: this.isModerator,
+                visibility: this.visibility,
+            }
+            if (!forWho && this.visibility === 1) { return dataToOtherUsers; }
+            else if (this._id.toString() === forWho._id.toString() //Full info for self and moderators
                     || forWho.isAdmin
                     || forWho.isModerator
-                ) { //Full info for self and moderators
-                    return {
-                        id: this._id,
-                        email: this.email,
-                        username: this.username,
-                        name: this.name? this.name : null,
-                        lastName: this.lastName? this.lastName : null,
-                        organization: this.organization? this.organization : null,
-                        about: this.about? this.about : null,
-                        isAdmin: this.isAdmin,
-                        isModerator: this.isModerator,
-                        isPremium: this.isPremium,
-                        projects: this.projects,
-                        buildings: this.buildings,
-                        participatesIn: this.participatesIn,
-                        visibility: this.visibility,
-                        avatar: this.avatar? this.getAvatarURL() : null,
-                    }
-                } else {
-                    if (this.visibility === 3) {
-                        return {
-                            id: this._id,
-                            username: this.username,
-                        }
-                    } else {
-                        return {
-                            id: this._id,
-                            username: this.username,
-                            name: this.name? this.name : null,
-                            lastName: this.lastName? this.lastName : null,
-                            organization: this.organization? this.organization : null,
-                            about: this.about? this.about : null,
-                            isPremium: this.isPremium,
-                            projects: this.projects,
-                            buildings: this.buildings,
-                            participatesIn: this.participatesIn,
-                            avatar: this.avatar? this.getAvatarURL() : null,
-                        }
-                    }
-                }
-            }
+                ) { return dataToSelfAndModerators }
+            else if (this.visibility === 3) { return dataForEveryone }
+            else { return dataToOtherUsers; }
         },
     }
 });
@@ -555,7 +542,7 @@ userSchema.pre('remove', async function () {
     }
     //Delete his personal file folder if exists
     if (this.avatar) {
-        await fs.rmSync(`/uploads/users/${this._id.toString()}`, {recursive: true, force: true});
+        await fs.promises.rm(`/uploads/users/${this._id.toString()}`, {recursive: true, force: true});
     }
 });
 

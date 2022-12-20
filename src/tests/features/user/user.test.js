@@ -134,7 +134,7 @@ describe('Tests for users', () => {
     });
 
     afterAll(async () => {
-        await fs.rmSync(__dirname + '/avatar.png');
+        await fs.promises.rm(__dirname + '/avatar.png');
     });
 
 });

@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const host = process.env['HOST'];
 const port = process.env['PORT'];
-const isTLS = Boolean(Number.parseInt(process.env['TLS'])); //TODO get envs in one file and export?
+const isTLS = Boolean(Number.parseInt(process.env['TLS']));
 
 const Schema = mongoose.Schema;
 
@@ -59,20 +59,24 @@ const buildingSchema = new Schema({
             return buildingToGetModel.model;
         },
         async _create(user, data, uploadedModel) {
-            //TODO add logic to premium
-            //TODO authorization to create buildings (for participants etc)
+            const Project = require('./project.model');
+            const User = require('./user.model');
+
+            const projectToAddBuilding = await Project.findById(data.projectID);
+            await User._checkIfAbleToAddBuilding(user, projectToAddBuilding);
             const createdBuilding = new this({...data, author: user._id});
-            if (uploadedModel) {createdBuilding.handleUploadedModel(uploadedModel);}
+            if (uploadedModel) {await createdBuilding.handleUploadedModel(uploadedModel);}
             await createdBuilding.save();
             const savedBuilding = await this.findById(createdBuilding._id);
             return savedBuilding.serialize();
         },
-        async _update(user, id, data, uploadedModel) { //TODO handle model
+        async _update(user, id, data, uploadedModel) {
             const buildingToEdit = await this.findById(id);
             await buildingToEdit.authorizeTo(user, 'update');
             for (const attribute of Object.keys(data)) {
                 buildingToEdit[attribute] = data[attribute];
             }
+            if (uploadedModel) {await buildingToEdit.handleUploadedModel(uploadedModel);}
             await buildingToEdit.save();
             const savedBuilding = await this.findById(buildingToEdit._id);
             return savedBuilding.serialize();
@@ -85,11 +89,14 @@ const buildingSchema = new Schema({
         },
     },
     methods: {
-        handleUploadedModel(model) {
+        async handleUploadedModel(model) {
+            if (this.model) {
+                await fs.promises.rm(this.model);
+            }
             const savePath = `/uploads/buildings/${this._id.toString()}/${model.originalname}`;
-            fs.cpSync(model.path, savePath); //TODO Sync is bad you know
-            fs.rmSync(model.path);
-            this.avatar = savePath; //No save call
+            await fs.promises.cp(model.path, savePath);
+            await fs.promises.rm(model.path);
+            this.model = savePath; //No save call
         },
         getModelURL() {
             const protocol = isTLS ? 'https' : 'http';
