@@ -206,8 +206,8 @@ const userSchema = new Schema({
         async _deleteProfile(user, id) {
             const profileToDelete = id? await this.findById(id) : user;
             profileToDelete.authorizeTo(user, 'delete');
-            await this.findByIdAndDelete(user._id);
-            return {success: true}; //TODO this doesnt work
+            await profileToDelete.remove();
+            return {success: true};
         },
         async _signUp(data) {
             let user = await this.findOne({ email: data.email});
@@ -340,7 +340,7 @@ const userSchema = new Schema({
             //Set new password to user and save
             user.password = data.password;
             await user.save();
-            await passwordResetToken.deleteOne();
+            await passwordResetToken.remove();
             //return info that it was successful
             return {success: true};
         },
@@ -401,7 +401,7 @@ const userSchema = new Schema({
             }
         },
         async removeProject(projectToRemove) {
-            this.projects = this.projects.splice(this.projects.indexOf(projectToRemove._id), 1);
+            this.projects.splice(this.projects.indexOf(projectToRemove._id), 1);
             await this.save();
         },
         async checkIfProjectUnique(projectToCheck) {
@@ -424,7 +424,7 @@ const userSchema = new Schema({
         },
         async removeParticipatingProject(projectToRemove) {
             if (this.participatesIn.includes(projectToRemove._id)) {
-                this.participatesIn = this.participatesIn.splice(this.participatesIn.indexOf(projectToRemove._id), 1);
+                this.participatesIn.splice(this.participatesIn.indexOf(projectToRemove._id), 1);
                 await this.save();
             }
         },
@@ -537,23 +537,26 @@ userSchema.pre('save', async function () {
     }
 });
 
-userSchema.pre(['deleteOne', 'deleteMany'], {document: true}, async function () {
+userSchema.pre('remove', async function () {
     //Delete all the projects that this user has created
     const Project = require("./project.model");
-    for await (const projectID of this.projects) {
+    for (const projectID of this.projects) {
         const project = await Project.findById(projectID);
-        await project.deleteOne();
+        await project.remove();
     }
     //Delete all tokens issued for this user
     await Token.deleteMany({userId: this._id});
     //Delete this user as participant from all the projects he participated in
-    for await (const projectID of this.participatesIn) {
+    for (const projectID of this.participatesIn) {
         const project = await Project.findById(projectID);
-        project.participants.splice(project.participants.indexOf(this._id), 1);
-        await project.save();
+        if (project) {
+            await project.removeParticipant(this);
+        }
     }
-    //Delete his avatar
-    await fs.rmSync(this.avatar);
+    //Delete his personal file folder if exists
+    if (this.avatar) {
+        await fs.rmSync(`/uploads/users/${this._id.toString()}`, {recursive: true, force: true});
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);

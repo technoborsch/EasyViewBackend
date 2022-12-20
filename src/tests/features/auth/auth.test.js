@@ -229,6 +229,9 @@ describe('Authentication, registration, activation, token refresh tests', () => 
     });
 
     afterAll(async () => {
-        await deleteProfile(accessToken)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const res = await signin(userEmail, allNewAllDifferentPassword);
+        const receivedData = await res.json();
+        await deleteProfile(receivedData.accessToken);
     });
 });

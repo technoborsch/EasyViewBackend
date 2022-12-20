@@ -110,6 +110,7 @@ describe('Tests for project feature', () => {
         const receivedData = await expectToReceiveObject(res, userData);
         expect(receivedData.projects).toContain(project1.id);
         expect(receivedData.projects).toContain(project2.id);
+        expect(receivedData.projects.length).toBe(2);
     });
 
     test('First user tries to create a project with the same name and gets rejected', async () => {
@@ -275,6 +276,12 @@ describe('Tests for project feature', () => {
         const res2 = await deleteProject(token1, project2.id);
         await expectSuccess(res1);
         await expectSuccess(res2);
+    });
+
+    test('After deletion, those projects are not anymore in first user projects list', async () => {
+        const res = await getUserByUsername(token1, user1name);
+        const receivedData = await res.json();
+        expect(receivedData.projects.length).toBe(0);
     });
 
     afterAll(async () => {

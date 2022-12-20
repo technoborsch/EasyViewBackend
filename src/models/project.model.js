@@ -26,7 +26,6 @@ const projectSchema = new Schema({
     author: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: 'user',
     },
     slug: {
         type: String,
@@ -100,7 +99,7 @@ const projectSchema = new Schema({
         async _delete(user, id) {
             const projectToDelete = await this.findById(id);
             projectToDelete.authorizeTo(user, 'delete');
-            await this.findByIdAndDelete(id);
+            await projectToDelete.remove();
             return {success: true};
         },
     },
@@ -114,7 +113,7 @@ const projectSchema = new Schema({
         async removeParticipant(user) {
             if (this.participants.includes(user._id)) {
                 const thisUserIndex = this.participants.indexOf(user._id)
-                this.participants = this.participants.splice(thisUserIndex, 1);
+                this.participants.splice(thisUserIndex, 1);
                 await this.save();
             }
         },
@@ -214,21 +213,18 @@ projectSchema.pre('save', async function () {
     }
 });
 
-projectSchema.pre(['deleteOne', 'deleteMany'], {document: true}, async function () {
+projectSchema.pre('remove', async function () {
     const User = require('./user.model');
+    const Building = require('./building.model');
     const author = await User.findById(this.author);
     await author.removeProject(this);
     for await (const buildingID of this.buildings) {
         const building = await Building.findById(buildingID);
-        await building.deleteOne();
+        await building.remove();
     }
     for await (const participantID of this.participants) {
         const participant = await User.findById(participantID);
         await participant.removeParticipatingProject(this);
-    }
-    for await (const buildingID of this.buildings) {
-        const building = await Building.findById(buildingID);
-        await building.deleteOne();
     }
 });
 

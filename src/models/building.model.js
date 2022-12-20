@@ -67,7 +67,7 @@ const buildingSchema = new Schema({
             const savedBuilding = await this.findById(createdBuilding._id);
             return savedBuilding.serialize();
         },
-        async _update(user, id, data, uploadedModel) {
+        async _update(user, id, data, uploadedModel) { //TODO handle model
             const buildingToEdit = await this.findById(id);
             await buildingToEdit.authorizeTo(user, 'update');
             for (const attribute of Object.keys(data)) {
@@ -80,7 +80,7 @@ const buildingSchema = new Schema({
         async _delete(user, id) {
             const buildingToDelete = await this.findById(id);
             await buildingToDelete.authorizeTo(user, 'delete');
-            await this.findByIdAndDelete(buildingToDelete._id);
+            await buildingToDelete.remove();
             return {success: true};
         },
     },
@@ -164,7 +164,7 @@ buildingSchema.pre('save', async function () {
     }
 });
 
-buildingSchema.post(['deleteOne', 'deleteMany'], {document: true}, async function() {
+buildingSchema.pre('remove',async function() {
     const User = require('./user.model');
     const Project = require("./project.model");
 
@@ -174,7 +174,6 @@ buildingSchema.post(['deleteOne', 'deleteMany'], {document: true}, async functio
     await project.removeBuilding(this);
 });
 
-//TODO model file
 //TODO viewpoints list
 
 module.exports = mongoose.model('Building', buildingSchema);

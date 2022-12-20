@@ -10,7 +10,6 @@ const {registerActivateAndLogin} = require('../auth/auth.action');
 
 const {
     createProject,
-    deleteProject,
     editProject,
 } = require('../project/project.request');
 
@@ -192,15 +191,8 @@ describe('Tests for building feature', () => {
     });
 
     afterAll(async () => {
-        await Promise.all([
-                //Delete both projects
-                deleteProject(token1, project1.id),
-                deleteProject(token1, project2.id),
-                //Delete all users
-                deleteProfile(token1),
-                deleteProfile(token2),
-                deleteProfile(token3),
-            ]
-        );
+        await deleteProfile(token1);
+        await deleteProfile(token2);
+        await deleteProfile(token3);
     });
 });
