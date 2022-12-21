@@ -7,6 +7,7 @@ const {
     isStrongPassword,
     isLength,
     isInt,
+    isNumeric,
     isBoolean,
     isMongoId,
 } = require('validator');
@@ -97,6 +98,55 @@ const buildingNameValidator = projectNameValidator;
 
 const buildingDescriptionValidator = projectDescriptionValidator;
 
+const viewpointDescriptionValidator = projectDescriptionValidator;
+
+const viewpointPositionValidator = (position) => {
+    if (!Array.isArray(position)) {return false;}
+    if (position.length !== 3) {return false;}
+    for (const value of position) {
+        if (!isNumeric(value + '')) {return false;}
+    }
+    return true;
+};
+
+const viewpointQuaternionValidator = (quaternion) => {
+    if (!Array.isArray(quaternion)) {return false;}
+    if (quaternion.length !== 4) {return false;}
+    for (const value of quaternion) {
+        if (!isNumeric(value + '')) {return false;}
+    }
+    return true;
+};
+
+const viewpointFovValidator = (fov) => {
+    if (!isNumeric(fov, {no_symbols: true})) {return false;}
+    return 0 < fov && fov < 150;
+};
+
+const viewpointDistanceToTargetValidator = (distance) => {
+    if (!isNumeric(distance, {no_symbols: true})) {return false;}
+    return 0 < distance;
+};
+
+const viewpointClipConstantsStatusValidator = (clipConstantsStatus) => {
+    if (!Array.isArray(clipConstantsStatus)) {return false;}
+    if (clipConstantsStatus.length !== 6) {return false;}
+    for (const value of clipConstantsStatus) {
+        if (!isBoolean(value + '')) {return false;}
+    }
+    return true;
+};
+
+const viewpointClipConstantsValidator = (clipConstants) => {
+    if (!Array.isArray(clipConstants)) {return false;}
+    if (clipConstants.length !== 6) {return false;}
+    for (const value of clipConstants) {
+        if (!isNumeric(value + '')) {return false;}
+    }
+    return true;
+};
+
+
 module.exports = {
     usernameValidator,
     nameValidator,
@@ -113,4 +163,11 @@ module.exports = {
     buildingNameValidator,
     buildingDescriptionValidator,
     projectParticipantsValidator,
-};
+    viewpointDescriptionValidator,
+    viewpointPositionValidator,
+    viewpointQuaternionValidator,
+    viewpointFovValidator,
+    viewpointDistanceToTargetValidator,
+    viewpointClipConstantsStatusValidator,
+    viewpointClipConstantsValidator,
+}; //TODO split in separate files

@@ -21,6 +21,7 @@ const authRoutes = require('./routes/auth.route');
 const userRoutes = require('./routes/user.route');
 const projectRoutes = require('./routes/project.route');
 const buildingRoutes = require('./routes/building.route');
+const viewpointRoutes = require('./routes/viewpoint.route');
 
 const redisClient = require('./utils/RedisClient');
 const handleError = require("./utils/handleError");
@@ -44,6 +45,7 @@ app.use('/api/v1', authRoutes);
 app.use('/api/v1', userRoutes);
 app.use('/api/v1', projectRoutes);
 app.use('/api/v1', buildingRoutes);
+app.use('/api/v1', viewpointRoutes);
 
 app.use(handleError);
 
