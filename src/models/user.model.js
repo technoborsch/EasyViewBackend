@@ -139,6 +139,9 @@ const userSchema = new Schema({
     buildings: {
         type: [Schema.Types.ObjectId],
     },
+    viewpoints: {
+        type: [Schema.Types.ObjectId],
+    },
     participatesIn: {
         type: [Schema.Types.ObjectId],
     },
@@ -454,6 +457,17 @@ const userSchema = new Schema({
             if (this.buildings.includes(buildingToRemove._id)) {
                 this.buildings.splice(this.buildings.indexOf(buildingToRemove._id), 1);
                 await this.save();
+            }
+        },
+        async addViewpoint(viewpointToAdd) {
+            if (!this.viewpoints.includes(viewpointToAdd._id)) {
+                this.viewpoints.push(viewpointToAdd._id);
+                await this.save();
+            }
+        },
+        async removeViewpoint(viewpointToRemove) {
+            if (this.viewpoints.includes(viewpointToRemove)) {
+                this.viewpoints.splice(this.viewpoints.indexOf(viewpointToRemove._id), 1);
             }
         },
         async handleNewAvatar(uploadedAvatar) {

@@ -30,6 +30,9 @@ const buildingSchema = new Schema({
         type: Schema.Types.ObjectId,
         required: true,
     },
+    viewpoints: {
+        type: [Schema.Types.ObjectId],
+    },
 }, {
     timestamps: true,
     statics: {
@@ -101,6 +104,17 @@ const buildingSchema = new Schema({
         getModelURL() {
             const protocol = isTLS ? 'https' : 'http';
             return `${protocol}://${host}:${port}/api/v1/buildings/${this._id.toString()}/model`;
+        },
+        async addViewpoint(viewpointToAdd) {
+            if (!this.viewpoints.includes(viewpointToAdd._id)) {
+                this.viewpoints.push(viewpointToAdd._id);
+                await this.save();
+            }
+        },
+        async removeViewpoint(viewpointToRemove) {
+            if (this.viewpoints.includes(viewpointToRemove)) {
+                this.viewpoints.splice(this.viewpoints.indexOf(viewpointToRemove._id), 1);
+            }
         },
         async authorizeTo(user, isAuthorizedTo) {
             const Project = require('../models/project.model');
