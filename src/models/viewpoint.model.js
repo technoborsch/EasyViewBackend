@@ -13,7 +13,7 @@ const viewPointSchema = new Schema({
         required: true,
     },
     owners: {
-        type: [Schema.Types.ObjectId], //TODO add logic
+        type: [Schema.Types.ObjectId],
     },
     description: {
         type: String,
@@ -47,26 +47,15 @@ const viewPointSchema = new Schema({
         async _getById(user, id) {
             const viewpointToReturn = await this.findById(id);
             if (!viewpointToReturn) {throw new ReqError('There is no such viewpoint', 404);}
-            viewpointToReturn.authorizeTo(user, 'read');
-            //TODO add viewpoint to a user that have read this viewpoint at least once
+            await viewpointToReturn.authorizeTo(user, 'read');
+            await viewpointToReturn.addOwner(user);
+            await user.addViewpoint(viewpointToReturn);
             return viewpointToReturn.serialize();
         },
         async _create(user, data) {
-            const Building = require('../models/building.model');
-            const Project = require('../models/project.model');
-
-            //TODO move this all to authorizeTO 'read'
-            const buildingToAddViewpoint = await Building.findById(data.buildingID);
-            if (!buildingToAddViewpoint) {throw new ReqError('There is no such building', 404);}
-            const projectOfBuilding = await Project.findById(buildingToAddViewpoint.projectID);
-            if (!projectOfBuilding) {throw new ReqError('Project of this building does not exists', 404)}
-            try { //Only users that can read project of building can create viewpoints to the building
-                projectOfBuilding.authorizeTo(user, 'read');
-            } catch (err) {
-                throw new ReqError('You are not authorized to add viewpoints to this project', 401);
-            }
             const viewpoint = new this({...data, author: user._id});
-            await viewpoint.save();
+            await viewpoint.authorizeTo(user, 'create');
+            await viewpoint.addOwner(user); //This also fires save so unnecessary to call it again
             const savedViewpoint = await this.findById(viewpoint._id);
             return savedViewpoint.serialize();
         },
@@ -81,22 +70,58 @@ const viewPointSchema = new Schema({
             return savedViewpoint.serialize();
         },
         async _delete(user, id) {
-            //TODO another logic here: only delete when all users have deleted it
             const viewpointToDelete = await this.findById(id);
-            viewpointToDelete.authorizeTo(user, 'delete');
-            await viewpointToDelete.remove();
+            await viewpointToDelete.authorizeTo(user, 'delete');
+            await user.removeViewpoint(this);
+            await viewpointToDelete.removeOwner(user);
             return {success: true}
         },
     },
     methods: {
-        authorizeTo(user, isAuthorizedTo) {
+        async addOwner(user) {
+            if (!this.owners.includes(user._id)) {
+                this.owners.push(user._id);
+            }
+            await this.save();
+        },
+        async removeOwner(user) {
+            if (this.owners.includes(user._id)) {
+                this.owners.splice(this.owners.indexOf(user._id), 1);
+            }
+            if (this.owners.length === 0) {
+                await this.remove();
+            } else { //Deletes if no owners left
+                await this.save();
+            }
+        },
+        async authorizeTo(user, isAuthorizedTo) {
             switch (isAuthorizedTo) {
                 case 'create':
                 case 'read':
-                    return; //TODO only those who can read project of building
+                    const Building = require('../models/building.model');
+                    const Project = require('../models/project.model');
+
+                    const buildingToAddViewpoint = await Building.findById(this.buildingID);
+                    if (!buildingToAddViewpoint) {throw new ReqError('There is no such building', 404);}
+                    const projectOfBuilding = await Project.findById(buildingToAddViewpoint.projectID);
+                    if (!projectOfBuilding) {throw new ReqError('Project of this building does not exists', 404)}
+                    try { //Only users that can read project of building can create viewpoints to the building
+                        projectOfBuilding.authorizeTo(user, 'read');
+                    } catch (err) {
+                        throw new ReqError('You are not authorized to do this', 403);
+                    }
+                    return;
                 case 'update':
+                    if (user._id.toString() !== this.author.toString()) {
+                        throw new ReqError('You are not authorized to edit this viewpoint', 403);
+                    }
                     return;
                 case 'delete':
+                    if (user._id.toString() !== this.author.toString()
+                        && !this.owners.includes(user._id)
+                    ) {
+                        throw new ReqError('You are not authorized to delete this viewpoint', 403);
+                    }
                     return;
                 default:
                     throw new Error('Wrong action is given in "authorize" method');
@@ -109,6 +134,7 @@ const viewPointSchema = new Schema({
             return {
                 id: this._id,
                 buildingID: this.buildingID,
+                author: this.author,
                 description: this.description ? this.description : this.generateDescription(),
                 position: this.position,
                 quaternion: this.quaternion,
@@ -123,11 +149,20 @@ const viewPointSchema = new Schema({
 });
 
 viewPointSchema.pre('save', async function() {
-    //TODO register viewpoint ID in user model and in building
+    const Building = require('../models/building.model');
+    const User = require('../models/user.model');
+
+    if (this.isNew) {
+        const buildingOfViewpoint = await Building.findById(this.buildingID);
+        const author = await User.findById(this.author);
+        await buildingOfViewpoint.addViewpoint(this);
+        await author.addViewpoint(this);
+    }
 });
 
 viewPointSchema.pre('remove', async function() {
-    //TODO remove viewpoint ID from all users and the building
+    const buildingOfViewpoint = await Building.findById(this.buildingID);
+    await buildingOfViewpoint.removeViewpoint(this);
 });
 
 module.exports = mongoose.model('Viewpoint', viewPointSchema);
