@@ -116,6 +116,7 @@ describe('Tests for building feature', () => {
         ...building1,
         id: null,
         slug: null,
+        viewpoints: null,
     };
 
     test('First user is able to create a building object in his public project', async () => {
@@ -131,6 +132,7 @@ describe('Tests for building feature', () => {
         ...building2,
         id: null,
         slug: null,
+        viewpoints: null,
     };
 
     test('A user is able to create a building object in private project', async () => {

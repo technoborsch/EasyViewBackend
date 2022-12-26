@@ -33,6 +33,9 @@ const buildingSchema = new Schema({
     viewpoints: {
         type: [Schema.Types.ObjectId],
     },
+    publicViewpoints: {
+        type: [Schema.Types.ObjectId],
+    },
 }, {
     timestamps: true,
     statics: {
@@ -108,13 +111,22 @@ const buildingSchema = new Schema({
         async addViewpoint(viewpointToAdd) {
             if (!this.viewpoints.includes(viewpointToAdd._id)) {
                 this.viewpoints.push(viewpointToAdd._id);
-                await this.save();
             }
+            if (viewpointToAdd.public && !this.publicViewpoints.includes(viewpointToAdd._id)) {
+                this.publicViewpoints.push(viewpointToAdd);
+            } else if (!viewpointToAdd.public && this.publicViewpoints.includes(viewpointToAdd._id)) {
+                this.publicViewpoints.splice(this.publicViewpoints.indexOf(viewpointToAdd._id), 1);
+            }
+            await this.save();
         },
         async removeViewpoint(viewpointToRemove) {
-            if (this.viewpoints.includes(viewpointToRemove)) {
+            if (this.viewpoints.includes(viewpointToRemove._id)) {
                 this.viewpoints.splice(this.viewpoints.indexOf(viewpointToRemove._id), 1);
             }
+            if (this.publicViewpoints.includes(viewpointToRemove._id)) {
+                this.publicViewpoints.splice(this.publicViewpoints.indexOf(viewpointToRemove._id), 1);
+            }
+            await this.save();
         },
         async authorizeTo(user, isAuthorizedTo) {
             const Project = require('../models/project.model');
@@ -161,6 +173,7 @@ const buildingSchema = new Schema({
                 slug: this.slug,
                 projectID: this.projectID,
                 author: this.author,
+                viewpoints: this.publicViewpoints,
             }
         },
     },
@@ -194,7 +207,5 @@ buildingSchema.pre('remove',async function() {
     const project = await Project.findById(this.projectID);
     await project.removeBuilding(this);
 });
-
-//TODO viewpoints list
 
 module.exports = mongoose.model('Building', buildingSchema);

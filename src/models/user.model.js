@@ -519,6 +519,7 @@ const userSchema = new Schema({
                 isAdmin: this.isAdmin,
                 isModerator: this.isModerator,
                 visibility: this.visibility,
+                viewpoints: this.viewpoints,
             }
             if (!forWho && this.visibility === 1) { return dataToOtherUsers; }
             else if (this._id.toString() === forWho._id.toString() //Full info for self and moderators

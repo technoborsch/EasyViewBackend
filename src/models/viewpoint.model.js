@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const ReqError = require('../utils/ReqError');
+const Building = require("./building.model");
 
 const Schema = mongoose.Schema;
 
@@ -18,6 +19,10 @@ const viewPointSchema = new Schema({
     description: {
         type: String,
         default: null,
+    },
+    public: {
+        type: Boolean,
+        default: false,
     },
     position: {
         type: [Number], //x, y, z
@@ -157,6 +162,10 @@ viewPointSchema.pre('save', async function() {
         const author = await User.findById(this.author);
         await buildingOfViewpoint.addViewpoint(this);
         await author.addViewpoint(this);
+    }
+    if (!this.isNew && this.isModified('public')) { //To move from list of public viewpoints when property is changed
+        const buildingOfViewpoint = await Building.findById(this.buildingID);
+        await buildingOfViewpoint.addViewpoint(this);
     }
 });
 

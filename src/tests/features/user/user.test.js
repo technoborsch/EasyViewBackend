@@ -42,6 +42,7 @@ describe('Tests for users', () => {
         isModerator: false,
         isPremium: false,
         visibility: 2,
+        viewpoints: null,
     };
 
     let token;
