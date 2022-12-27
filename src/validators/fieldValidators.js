@@ -119,12 +119,12 @@ const viewpointQuaternionValidator = (quaternion) => {
 };
 
 const viewpointFovValidator = (fov) => {
-    if (!isNumeric(fov, {no_symbols: true})) {return false;}
+    if (!isNumeric(fov + '')) {return false;}
     return 0 < fov && fov < 150;
 };
 
 const viewpointDistanceToTargetValidator = (distance) => {
-    if (!isNumeric(distance, {no_symbols: true})) {return false;}
+    if (!isNumeric(distance + '')) {return false;}
     return 0 < distance;
 };
 
