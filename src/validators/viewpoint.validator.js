@@ -5,6 +5,7 @@ const {
     viewpointPositionValidator,
     viewpointQuaternionValidator,
     viewpointFovValidator,
+    viewpointPublicValidator,
     viewpointDistanceToTargetValidator,
     viewpointClipConstantsStatusValidator,
     viewpointClipConstantsValidator,
@@ -36,6 +37,7 @@ const createViewpointValidator = (req, res, next) => {
             ['description', viewpointDescriptionValidator],
             ['clipConstantsStatus', viewpointClipConstantsStatusValidator],
             ['clipConstants', viewpointClipConstantsValidator],
+            ['public', viewpointPublicValidator],
         ],
     );
     validateBody(req);
@@ -54,6 +56,7 @@ const editViewpointValidator = (req, res, next) => {
             ['description', viewpointDescriptionValidator],
             ['clipConstantsStatus', viewpointClipConstantsStatusValidator],
             ['clipConstants', viewpointClipConstantsValidator],
+            ['public', viewpointPublicValidator],
         ],
     );
     const validateParams = requestPropertyValidatorFactory(

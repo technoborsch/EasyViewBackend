@@ -144,6 +144,7 @@ const viewPointSchema = new Schema({
                 position: this.position,
                 quaternion: this.quaternion,
                 fov: this.fov,
+                public: this.public,
                 distanceToTarget: this.distanceToTarget,
                 clipConstantsStatus: this.clipConstantsStatus,
                 clipConstants: this.clipConstants,

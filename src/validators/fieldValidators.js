@@ -123,6 +123,10 @@ const viewpointFovValidator = (fov) => {
     return 0 < fov && fov < 150;
 };
 
+const viewpointPublicValidator = (isPublic) => {
+    return isBoolean(isPublic + '');
+};
+
 const viewpointDistanceToTargetValidator = (distance) => {
     if (!isNumeric(distance + '')) {return false;}
     return 0 < distance;
@@ -167,6 +171,7 @@ module.exports = {
     viewpointPositionValidator,
     viewpointQuaternionValidator,
     viewpointFovValidator,
+    viewpointPublicValidator,
     viewpointDistanceToTargetValidator,
     viewpointClipConstantsStatusValidator,
     viewpointClipConstantsValidator,

@@ -201,11 +201,17 @@ buildingSchema.pre('save', async function () {
 buildingSchema.pre('remove',async function() {
     const User = require('./user.model');
     const Project = require("./project.model");
+    const Viewpoint = require('./viewpoint.model');
 
     const author = await User.findById(this.author);
     await author.removeBuilding(this);
     const project = await Project.findById(this.projectID);
     await project.removeBuilding(this);
+
+    for (const viewpointID of this.viewpoints) {
+        const viewpoint = await Viewpoint.findById(viewpointID);
+        await viewpoint.remove();
+    }
 });
 
 module.exports = mongoose.model('Building', buildingSchema);
