@@ -14,7 +14,9 @@ const {isMongoId} = require("validator");
 const getViewpointByIdValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
-        ['id', isMongoId],
+        [
+            ['id', isMongoId],
+        ],
     );
     validateParams(req);
     next();
@@ -56,7 +58,9 @@ const editViewpointValidator = (req, res, next) => {
     );
     const validateParams = requestPropertyValidatorFactory(
         'params',
-        ['id', isMongoId],
+        [
+            ['id', isMongoId],
+        ],
     );
     validateParams(req);
     validateBody(req);
@@ -66,7 +70,9 @@ const editViewpointValidator = (req, res, next) => {
 const deleteViewpointValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
-        ['id', isMongoId],
+        [
+            ['id', isMongoId],
+        ],
     );
     validateParams(req);
     next();
