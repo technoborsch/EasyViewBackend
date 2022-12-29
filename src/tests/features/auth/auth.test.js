@@ -1,5 +1,4 @@
-const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
-const generateUsername = require('../../../utils/GenerateUsername');
+const cg = require('../../../utils/CredentialsGenerator');
 const extractDataFromEmailLink = require('../../../utils/ExtractDataFromEmailLink');
 const {getProtected, getUserByUsername} = require("../user/user.request");
 const {
@@ -25,9 +24,9 @@ const {
 describe('Authentication, registration, activation, token refresh tests', () => {
     jest.setTimeout(30000);
 
-    const userEmail = generateUserEmail();
-    let password = 'superStrongpassword88';
-    let username = generateUsername();
+    const userEmail = cg.generateUserEmail();
+    let password = cg.generatePassword();
+    let username = cg.generateUsername();
     let accessToken;
     let refreshingToken;
     let activationToken;
@@ -93,7 +92,7 @@ describe('Authentication, registration, activation, token refresh tests', () => 
     });
 
     test('Try to register the same email again and get an error', async () => {
-        const res = await registerUser(userEmail, generateUsername(), password);
+        const res = await registerUser(userEmail, cg.generateUsername(), password);
         await expectError(res, 409);
     });
 
@@ -124,7 +123,7 @@ describe('Authentication, registration, activation, token refresh tests', () => 
         await expectError(res, 409);
     });
 
-    const anotherNewPassword = 'newPasswordiwillneverforget55';
+    const anotherNewPassword = cg.generatePassword();
 
     test('Not to be able to login with new password', async () => {
         const res = await signin(userEmail, anotherNewPassword);
@@ -179,9 +178,9 @@ describe('Authentication, registration, activation, token refresh tests', () => 
         await expectSuccess(res);
     });
 
-    const allNewAllDifferentPassword = 'DifferentPassword33';
+    const allNewAllDifferentPassword = cg.generatePassword();
 
-    const newUsername = generateUsername();
+    const newUsername = cg.generateUsername();
     let newId;
 
     test('Register and get registration info again with new username and password', async () => {
@@ -209,7 +208,7 @@ describe('Authentication, registration, activation, token refresh tests', () => 
     });
 
     test('Not to be able to reset password using token issued before deletion', async () => {
-        const res = await resetPassword(resetToken, newId, "SomeNewpassword22");
+        const res = await resetPassword(resetToken, newId, cg.generatePassword());
         await expectError(res, 401);
     });
 

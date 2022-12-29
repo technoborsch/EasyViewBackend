@@ -16,8 +16,7 @@ const {
     expectError,
     expectToReceiveObject,
 } = require('../../common');
-const generateUsername = require('../../../utils/GenerateUsername');
-const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
+const cg = require('../../../utils/CredentialsGenerator');
 
 describe('Tests for viewpoint feature', () => {
     jest.setTimeout(30000);
@@ -56,15 +55,9 @@ describe('Tests for viewpoint feature', () => {
     let viewpoint1updatedData;
 
     beforeAll(async () => {
-        const user1mail = generateUserEmail();
-        const user1username = generateUsername();
-        const user1password = 'ReallyStrongPassword45';
-        const user2mail = generateUserEmail();
-        const user2username = generateUsername();
-        const user2password = 'SuperPassword11';
 
-        const data1 = await registerActivateAndLogin(user1mail, user1username, user1password);
-        const data2 = await registerActivateAndLogin(user2mail, user2username, user2password);
+        const data1 = await registerActivateAndLogin(...cg.generateCredentials());
+        const data2 = await registerActivateAndLogin(...cg.generateCredentials());
 
         user1 = data1.user;
         token1 = data1.accessToken;

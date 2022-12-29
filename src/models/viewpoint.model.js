@@ -133,7 +133,7 @@ const viewPointSchema = new Schema({
             }
         },
         generateDescription() {
-            return 'description'; //TODO realize
+            return 'Viewpoint without description';
         },
         serialize() {
             return {

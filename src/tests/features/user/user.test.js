@@ -2,8 +2,7 @@ const fs = require('fs');
 const { Readable } = require('stream');
 const { finished } = require('stream/promises');
 
-const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
-const generateUsername = require('../../../utils/GenerateUsername');
+const cg = require('../../../utils/CredentialsGenerator');
 
 const {
     signin,
@@ -32,8 +31,8 @@ describe('Tests for users', () => {
 
     const user = {
         id: null,
-        email: generateUserEmail(),
-        username: generateUsername(),
+        email: cg.generateUserEmail(),
+        username: cg.generateUsername(),
         name: null,
         lastName: null,
         about: null,
@@ -46,7 +45,7 @@ describe('Tests for users', () => {
     };
 
     let token;
-    const password = 'Verystrongpassword55';
+    const password = cg.generatePassword();
     let id;
 
     beforeAll(async () => {
@@ -63,7 +62,7 @@ describe('Tests for users', () => {
         updatedUser.avatar = `http://127.0.0.1:8020/api/v1/user/${id}/avatar`;
     });
 
-    const newPassword = 'Evenmorestrongandmightypassword88';
+    const newPassword = cg.generatePassword();
     const updateData = {
         name: 'Ulfrich',
         about: 'Its me',
@@ -71,10 +70,9 @@ describe('Tests for users', () => {
         password: newPassword,
     };
     const update = new FormData();
-    update.append('name', 'Ulfrich');
-    update.append('about', 'Its me');
-    update.append('organization', 'Microsoft');
-    update.append('password', 'Evenmorestrongandmightypassword88');
+    for (const attribute of Object.keys(updateData)) {
+        update.append(attribute, updateData[attribute]);
+    }
     update.append('avatar', new Blob([fs.readFileSync(__dirname + '/image.png')], {type: 'image/png'}), 'image.png');
     const updatedUser = {
         ...user,

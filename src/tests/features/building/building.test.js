@@ -19,23 +19,22 @@ const {
     expectToReceiveObject,
 } = require('../../common');
 
-const {generateUserEmail} = require('../../../utils/GenerateUserEmail');
-const generateUsername = require('../../../utils/GenerateUsername');
+const cg = require('../../../utils/CredentialsGenerator');
 
 const {deleteProfile} = require("../user/user.request");
 
 describe('Tests for building feature', () => {
     jest.setTimeout(30000);
 
-    const email1 = generateUserEmail();
-    const email2 = generateUserEmail();
-    const email3 = generateUserEmail();
+    const email1 = cg.generateUserEmail();
+    const email2 = cg.generateUserEmail();
+    const email3 = cg.generateUserEmail();
 
-    const username1 = generateUsername();
-    const username2 = generateUsername();
-    const username3 = generateUsername();
+    const username1 = cg.generateUsername();
+    const username2 = cg.generateUsername();
+    const username3 = cg.generateUsername();
 
-    const password = 'Testbuildingswell33';
+    const password = cg.generatePassword();
 
     let user1id;
     let user2id;

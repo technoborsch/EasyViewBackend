@@ -8,8 +8,7 @@ const {
     editProject,
     deleteProject,
 } = require('./project.request');
-const {generateUserEmail} = require("../../../utils/GenerateUserEmail"); //TODO move in single file 'generators'
-const generateUsername = require('../../../utils/GenerateUsername');
+const cg = require('../../../utils/CredentialsGenerator');
 const {
     expectSuccess,
     expectError,
@@ -24,14 +23,14 @@ const {
 describe('Tests for project feature', () => {
     jest.setTimeout(30000);
 
-    const user1mail = generateUserEmail();
-    const user1name = generateUsername();
-    const user1password = 'thisPasswordisunique99';
+    const user1mail = cg.generateUserEmail();
+    const user1name = cg.generateUsername();
+    const user1password = cg.generatePassword();
     let user1id;
 
-    const user2mail = generateUserEmail();
-    const user2name = generateUsername();
-    const user2password = 'Thispasswordismoreunique55';
+    const user2mail = cg.generateUserEmail();
+    const user2name = cg.generateUsername();
+    const user2password = cg.generatePassword();
     let user2id;
 
     let token1;
