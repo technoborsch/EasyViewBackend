@@ -1,8 +1,8 @@
 const {
     createProjectValidator,
     editProjectValidator,
-} = require('../../validators/project.validator');
-const ReqError = require("../../utils/ReqError");
+} = require('../../../validators/project/project.validator');
+const ReqError = require("../../../utils/ReqError");
 
 describe('Project creating data validation tests', () => {
     const next = () => {};

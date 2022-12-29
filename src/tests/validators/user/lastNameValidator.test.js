@@ -1,4 +1,4 @@
-const {lastNameValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/user/user.fields');
 
 const cases = [
     ['Smith', true],
@@ -11,10 +11,10 @@ const cases = [
     ['FFFFFFFFFFFFFFFFFFFFFFF', true],
     ['R'.repeat(101), false]
 ];
-describe("Tests for name field validator", () => {
+describe("Tests for last name field validator", () => {
     test.each(cases)(
         "Validating %p should return %p", async (string, result) => {
-            expect(lastNameValidator(string)).toBe(result);
+            expect(fv.lastName(string)).toBe(result);
         }
     );
 });

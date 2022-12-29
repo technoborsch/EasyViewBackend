@@ -10,7 +10,7 @@ const {
     getUserByIDValidator,
     updateProfileValidator,
     deleteProfileValidator,
-} = require('../validators/user.validator');
+} = require('../validators/user/user.validator');
 const User = require("../models/user.model");
 
 const router = express.Router();

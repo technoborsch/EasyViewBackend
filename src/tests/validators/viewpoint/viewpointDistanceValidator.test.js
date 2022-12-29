@@ -1,4 +1,4 @@
-const {viewpointDistanceToTargetValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/viewpoint/viewpoint.fields');
 
 const cases = [
     ['Wrong', false],
@@ -15,7 +15,7 @@ const cases = [
 describe('Test cases for viewpoint distance to target field validator', () => {
     test.each(cases)(
         'Validating %p should return %p', async (distance, result) => {
-            expect(viewpointDistanceToTargetValidator(distance)).toBe(result);
+            expect(fv.distanceToTarget(distance)).toBe(result);
         }
     );
 });

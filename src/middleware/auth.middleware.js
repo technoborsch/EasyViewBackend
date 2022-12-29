@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model')
 const ReqError = require("../utils/ReqError");
-const {tokenHeaderValidator} = require("../validators/fieldValidators");
+const fv = require("../validators/auth/auth.fields");
 const redis = require('../utils/RedisClient');
 const bcrypt = require("bcrypt");
 
@@ -98,7 +98,7 @@ const refreshAuthMiddleware = async (req, res, next) => {
 const checkAndDecodeAttachedToken = async (req) => {
     const authString = req.get('Authorization');
     if (!authString) throw new ReqError('Credentials were not provided', 401);
-    if (!tokenHeaderValidator(authString)) {
+    if (!fv.tokenHeader(authString)) {
         throw new ReqError('Wrong credentials - "Authorization" header must contain information in format "Token" +' +
             '" " + "{valid JWT token}. Check this header"', 401);
     }

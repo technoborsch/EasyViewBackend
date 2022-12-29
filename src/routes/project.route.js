@@ -12,7 +12,7 @@ const {
 	createProjectValidator,
 	editProjectValidator,
 	deleteProjectValidator,
-} = require("../validators/project.validator");
+} = require("../validators/project/project.validator");
 
 // Get all projects
 router.get(

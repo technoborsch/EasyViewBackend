@@ -6,7 +6,7 @@ const {
     createViewpointValidator,
     editViewpointValidator,
     deleteViewpointValidator
-} = require('../validators/viewpoint.validator');
+} = require('../validators/viewpoint/viewpoint.validator');
 const Viewpoint = require('../models/viewpoint.model');
 
 const router = express.Router();

@@ -1,23 +1,13 @@
-const {requestPropertyValidatorFactory} = require("../utils/ValidatorFactory");
-const {
-    projectNameValidator,
-    projectDescriptionValidator,
-    projectParticipantsValidator,
-    projectPrivateValidator,
-    usernameValidator,
-} = require("./fieldValidators");
-const {
-    isSlug,
-    isMongoId,
-} = require('validator');
+const {requestPropertyValidatorFactory} = require("../../utils/ValidatorFactory");
+const fv = require('./project.fields');
 
 const getProjectBySlugValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['username', usernameValidator],
-            ['slug', isSlug],
-        ]
+            ['username', fv.username],
+            ['slug', fv.slug],
+        ],
     );
     validateParams(req);
     next();
@@ -27,7 +17,7 @@ const getProjectByIDValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     );
     validateParams(req);
@@ -38,12 +28,12 @@ const createProjectValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-        ['name', projectNameValidator],
+        ['name', fv.name],
     ],
         [
-        ['description', projectDescriptionValidator],
-        ['private', projectPrivateValidator],
-        ['participants', projectParticipantsValidator],
+        ['description', fv.description],
+        ['private', fv.private],
+        ['participants', fv.participants],
     ],
     );
     validateBody(req);
@@ -55,15 +45,15 @@ const editProjectValidator = (req, res, next) => {
         'body',
         [],
         [
-            ['name', projectNameValidator],
-            ['description', projectDescriptionValidator],
-            ['participants', projectParticipantsValidator],
+            ['name', fv.name],
+            ['description', fv.description],
+            ['participants', fv.participants],
         ],
     );
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     );
     validateParams(req);

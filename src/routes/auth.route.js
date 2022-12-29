@@ -12,7 +12,7 @@ const {
     resetPasswordValidator,
     resetPasswordRequestValidator,
     refreshTokenValidator,
-} = require("../validators/auth.validator");
+} = require("../validators/auth/auth.validator");
 const User = require("../models/user.model");
 
 const router = express.Router();

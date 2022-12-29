@@ -2,23 +2,14 @@ const {
     requestPropertyValidatorFactory,
     validateThatBodyIsAbsent,
     uploadedFileValidatorFactory
-} = require("../utils/ValidatorFactory");
-const {
-    nameValidator,
-    passwordValidator,
-    lastNameValidator,
-    aboutValidator,
-    organizationValidator,
-    visibilityValidator,
-    usernameValidator,
-} = require("./fieldValidators");
-const {isMongoId} = require("validator");
+} = require("../../utils/ValidatorFactory");
+const fv = require('./user.fields');
 
 const getUserByUsernameValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['username', usernameValidator],
+            ['username', fv.username],
         ]
     );
     validateParams(req);
@@ -29,7 +20,7 @@ const getUserByIDValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     );
     validateParams(req);
@@ -57,18 +48,18 @@ const updateProfileValidator = (req, res, next) => {
         'body',
         [],
         [
-        ['name', nameValidator],
-        ['lastName', lastNameValidator],
-        ['password', passwordValidator],
-        ['about', aboutValidator],
-        ['organization', organizationValidator],
-        ['visibility', visibilityValidator],
+        ['name', fv.name],
+        ['lastName', fv.lastName],
+        ['password', fv.password],
+        ['about', fv.about],
+        ['organization', fv.organization],
+        ['visibility', fv.visibility],
     ]
     );
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     );
     const validateFile = uploadedFileValidatorFactory(
@@ -88,7 +79,7 @@ const deleteProfileValidator = (req, res, next) => {
         'params',
         [],
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     ) : (req) => {};
     validateParams(req);

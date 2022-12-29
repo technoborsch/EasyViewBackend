@@ -1,5 +1,5 @@
-const {activateValidator} = require('../../validators/auth.validator');
-const ReqError = require("../../utils/ReqError");
+const {activateValidator} = require('../../../validators/auth/auth.validator');
+const ReqError = require("../../../utils/ReqError");
 
 describe('Activation data validation tests', () => {
     const next = () => {};

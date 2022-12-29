@@ -1,24 +1,16 @@
 const {
     requestPropertyValidatorFactory,
     uploadedFileValidatorFactory,
-} = require('../utils/ValidatorFactory');
-const {
-    buildingNameValidator,
-    buildingDescriptionValidator,
-    usernameValidator,
-} = require("./fieldValidators");
-const {
-    isSlug,
-    isMongoId,
-} = require('validator');
+} = require('../../utils/ValidatorFactory');
+const fv = require('./building.fields');
 
 const getBuildingBySlugValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['username', usernameValidator],
-            ['projectSlug', isSlug],
-            ['buildingSlug', isSlug],
+            ['username', fv.username],
+            ['projectSlug', fv.slug],
+            ['buildingSlug', fv.slug],
         ],
     );
     validateParams(req);
@@ -29,7 +21,7 @@ const getBuildingByIDValidator = (req, res, next) => {
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ],
     );
     validateParams(req);
@@ -40,9 +32,9 @@ const createBuildingValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-            ['name', buildingNameValidator],
-            ['description', buildingDescriptionValidator],
-            ['projectID', isMongoId],
+            ['name', fv.name],
+            ['description', fv.description],
+            ['projectID', fv.id],
         ],
     );
     const validateUpload = uploadedFileValidatorFactory(
@@ -60,14 +52,14 @@ const editBuildingValidator = (req, res, next) => {
         'body',
         [],
         [
-            ['name', buildingNameValidator],
-            ['description', buildingDescriptionValidator],
+            ['name', fv.name],
+            ['description', fv.description],
         ],
     );
     const validateParams = requestPropertyValidatorFactory(
         'params',
         [
-            ['id', isMongoId],
+            ['id', fv.id],
         ]
     );
     const validateUpload = uploadedFileValidatorFactory(

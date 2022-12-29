@@ -1,4 +1,4 @@
-const {viewpointClipConstantsValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/viewpoint/viewpoint.fields');
 
 const cases = [
     ['Wrong', false],
@@ -11,7 +11,7 @@ const cases = [
 describe('Test cases for viewpoint clip constants field validator', () => {
     test.each(cases)(
         'Validating %p should return %p', async (clipConstants, result) => {
-            expect(viewpointClipConstantsValidator(clipConstants)).toBe(result);
+            expect(fv.clipConstants(clipConstants)).toBe(result);
         }
     );
 });

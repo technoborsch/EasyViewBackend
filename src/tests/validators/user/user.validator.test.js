@@ -1,5 +1,5 @@
-const {updateProfileValidator} = require('../../validators/user.validator');
-const ReqError = require("../../utils/ReqError");
+const {updateProfileValidator} = require('../../../validators/user/user.validator');
+const ReqError = require("../../../utils/ReqError");
 
 describe('User profile updating data validation tests', () => {
     const next = () => {};

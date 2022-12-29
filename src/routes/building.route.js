@@ -8,7 +8,7 @@ const {
     createBuildingValidator,
     editBuildingValidator,
     deleteBuildingValidator,
-} = require("../validators/building.validator");
+} = require("../validators/building/building.validator");
 const Building = require('../models/building.model');
 
 const router = express.Router();

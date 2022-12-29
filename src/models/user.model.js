@@ -1,6 +1,5 @@
 const fs = require('fs');
 const mongoose = require('mongoose');
-const {isEmail} = require('validator');
 const bcrypt = require('bcrypt');
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
@@ -9,14 +8,8 @@ const redis = require("../utils/RedisClient");
 const Token = require("./token.model");
 const ReqError = require("../utils/ReqError");
 const sendEmail = require("../utils/sendEmail");
-const {
-    usernameValidator,
-    passwordValidator,
-    nameValidator,
-    lastNameValidator,
-    aboutValidator,
-    organizationValidator,
-} = require('../validators/fieldValidators');
+
+const fv = require('../validators/user/user.fields');
 
 const host = process.env['HOST'];
 const port = process.env['PORT'];
@@ -64,7 +57,7 @@ const userSchema = new Schema({
         unique: true,
         required: [true, 'Email is required'],
         validate: {
-            validator: isEmail,
+            validator: fv.email,
             message: props => `${props.value} is not a valid email`,
         },
     },
@@ -73,7 +66,7 @@ const userSchema = new Schema({
         unique: true,
         required: [true, 'Username is required'],
         validate: {
-            validator: usernameValidator,
+            validator: fv.username,
             message: props => `${props.value} is not a valid username`,
         }
     },
@@ -81,35 +74,35 @@ const userSchema = new Schema({
         type: String,
         required: [true, 'Password is required'],
         validate: {
-            validator: passwordValidator,
+            validator: fv.password,
             message: () => 'This password is not strong enough',
         },
     },
     name: {
         type: String,
         validate: {
-            validator: nameValidator,
+            validator: fv.name,
             message: () => 'This name is not valid name',
         },
     },
     lastName: {
         type: String,
         validate: {
-            validator: lastNameValidator,
+            validator: fv.lastName,
             message: () => 'This lastname is not valid',
         },
     },
     organization: {
         type: String,
         validate: {
-            validator: organizationValidator,
+            validator: fv.organization,
             message: () => 'This organization name is not valid',
         },
     },
     about: {
         type: String,
         validate: {
-            validator: aboutValidator,
+            validator: fv.about,
             message: () => 'This "about" is not valid',
         },
     },

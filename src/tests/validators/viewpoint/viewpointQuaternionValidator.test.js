@@ -1,4 +1,4 @@
-const {viewpointQuaternionValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/viewpoint/viewpoint.fields');
 
 const cases = [
     ['Wrong', false],
@@ -16,7 +16,7 @@ describe('Test cases for viewpoint quaternion field validator', () => {
 
     test.each(cases)(
         'Validating %p should return %p', async (quaternion, result) => {
-            expect(viewpointQuaternionValidator(quaternion)).toBe(result);
+            expect(fv.quaternion(quaternion)).toBe(result);
         }
     );
 });

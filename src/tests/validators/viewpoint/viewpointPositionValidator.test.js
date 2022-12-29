@@ -1,4 +1,4 @@
-const {viewpointPositionValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/viewpoint/viewpoint.fields');
 
 const cases = [
     ['Wrong', false],
@@ -15,7 +15,7 @@ const cases = [
 describe('Test cases for viewpoint position field validator', () => {
     test.each(cases)(
         'Validating %p should return %p', async (position, result) => {
-            expect(viewpointPositionValidator(position)).toBe(result);
+            expect(fv.position(position)).toBe(result);
         }
     );
 });

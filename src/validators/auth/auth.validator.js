@@ -1,18 +1,10 @@
 const {
-    isEmail,
-    isMongoId,
-    isHexadecimal,
-} = require('validator');
-const {
-    usernameValidator,
-    passwordValidator,
-    loginHeaderValidator,
-} = require('./fieldValidators')
-const {
     requestPropertyValidatorFactory,
     headersValidatorFactory,
     validateThatBodyIsAbsent,
-} = require("../utils/ValidatorFactory");
+} = require("../../utils/ValidatorFactory");
+
+const fv = require('./auth.fields');
 
 /**
  * Validates request that will be provided to signup controller. This data must contain attributes "email" with
@@ -27,9 +19,9 @@ const signupValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-            ['email', isEmail],
-            ['username', usernameValidator],
-            ['password', passwordValidator],
+            ['email', fv.email],
+            ['username', fv.username],
+            ['password', fv.password],
         ],
     );
     validateBody(req);
@@ -51,8 +43,8 @@ const activateValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-            ['id', isMongoId],
-            ['token', isHexadecimal],
+            ['id', fv.id],
+            ['token', fv.token],
         ],
     );
     validateBody(req);
@@ -73,7 +65,7 @@ const signinValidator = (req, res, next) => {
     validateThatBodyIsAbsent(req);
     const validateHeaders = headersValidatorFactory(
         [
-            ['Authorization', loginHeaderValidator]
+            ['Authorization', fv.loginHeader]
         ]
     );
     validateHeaders(req);
@@ -91,7 +83,7 @@ const resetPasswordRequestValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-        ['email', isEmail],
+        ['email', fv.email],
     ]);
     validateBody(req);
     next();
@@ -113,9 +105,9 @@ const resetPasswordValidator = (req, res, next) => {
     const validateBody = requestPropertyValidatorFactory(
         'body',
         [
-            ['id', isMongoId],
-            ['token', isHexadecimal],
-            ['password', passwordValidator]
+            ['id', fv.id],
+            ['token', fv.token],
+            ['password', fv.password]
         ],
     );
     validateBody(req);

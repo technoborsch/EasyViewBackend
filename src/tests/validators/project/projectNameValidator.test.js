@@ -1,4 +1,4 @@
-const {projectNameValidator} = require('../../../validators/fieldValidators');
+const fv = require('../../../validators/project/project.fields');
 
 const cases = [
     ['Reeee', true],
@@ -17,7 +17,7 @@ const cases = [
 describe("Tests for project name field validator", () => {
     test.each(cases)(
         "Validating %p should return %p", async (string, result) => {
-            expect(projectNameValidator(string)).toBe(result);
+            expect(fv.name(string)).toBe(result);
         }
     );
 });
