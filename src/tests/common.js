@@ -52,7 +52,7 @@ const expectToReceiveObjectArray = async (res, objectArray) => {
         console.log(receivedData);
     }
     expect(res.status).toBe(200);
-    expect(receivedData.length).toBe(objectArray.length);
+    expect(receivedData.length).toBeGreaterThanOrEqual(objectArray.length); //Greater or equal to allow parallel tests
     for (const object of objectArray) {
             expect(receivedData).toContainEqual(object);
         }

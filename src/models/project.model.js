@@ -3,6 +3,12 @@ const slugify = require('slugify');
 
 const ReqError = require("../utils/ReqError");
 
+const slugifyOptions = {
+    replacement: '_',
+    lower: true,
+    strict: true,
+};
+
 const Schema = mongoose.Schema;
 
 const projectSchema = new Schema({
@@ -196,13 +202,13 @@ projectSchema.pre('save', async function () {
     const User = require('./user.model')
 
     if (this.isNew) {
-        this.slug = slugify(this.name);
+        this.slug = slugify(this.name, slugifyOptions);
         const user = await User.findById(this.author);
         await user.addProject(this);
     }
     if (this.isModified('name') && !this.isNew) {
         const user = await User.findById(this.author);
-        this.slug = slugify(this.name);
+        this.slug = slugify(this.name, slugifyOptions);
         await user.checkIfProjectUnique(this);
     }
     if (this.isModified('participants')) {

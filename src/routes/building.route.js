@@ -12,7 +12,15 @@ const {
 const Building = require('../models/building.model');
 
 const router = express.Router();
-const upload = multer({dest: '/uploads/tmp/models'});
+const upload = multer(
+    {
+        dest: '/uploads/tmp/models',
+        limits: {
+            fileSize: 500 * 1024 * 1024, //500 MB
+            files: 1 //Only one file
+        }
+    }
+);
 
 // Get building by slug
 router.get(

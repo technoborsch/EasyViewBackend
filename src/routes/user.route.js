@@ -14,7 +14,16 @@ const {
 const User = require("../models/user.model");
 
 const router = express.Router();
-const upload = multer({dest: '/uploads/tmp/avatar'});
+const upload = multer(
+    {
+        dest: '/uploads/tmp/avatar',
+        limits: {
+            fileSize: 20 * 1024 * 1024, //20 MB
+            files: 1 //Only one file
+        }
+    }
+);
+
 
 //Route used to get list of users
 router.get(
@@ -76,7 +85,7 @@ router.delete(
     }
 );
 
-//Just a little test route TODO remove later
+//Test route
 router.get(
     '/user/test/protected',
     auth,

@@ -1,5 +1,4 @@
 const {
-    isEmail,
     isMongoId,
     isAlphanumeric,
     isSlug,
@@ -15,13 +14,13 @@ const idValidator = (id) => {
 };
 
 const usernameValidator = (username) => {
-    if (!isAlphanumeric(username) && !isSlug) {return false}
+    if (!isAlphanumeric(username) || !isSlug(username)) {return false}
     return isLength(username, 5, 50);
 };
 
 const slugValidator = (slug) => {
     return isSlug(slug + '');
-}
+};
 
 module.exports = {
     startsOrEndsWithWhiteSpace,

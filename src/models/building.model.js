@@ -9,6 +9,12 @@ const isTLS = Boolean(Number.parseInt(process.env['TLS']));
 
 const Schema = mongoose.Schema;
 
+const slugifyOptions = {
+    replacement: '_',
+    lower: true,
+    strict: true,
+};
+
 const buildingSchema = new Schema({
     name: {
         type: String,
@@ -184,7 +190,7 @@ buildingSchema.pre('save', async function () {
     const Project = require("./project.model");
 
     if (this.isNew) {
-        this.slug = slugify(this.name);
+        this.slug = slugify(this.name, slugifyOptions);
         const author = await User.findById(this.author);
         await author.addBuilding(this);
         const project = await Project.findById(this.projectID);
@@ -192,7 +198,7 @@ buildingSchema.pre('save', async function () {
     }
 
     if (!this.isNew && this.isModified('name')) {
-        this.slug = slugify(this.name);
+        this.slug = slugify(this.name, slugifyOptions);
         const project = await Project.findById(this.projectID);
         await project.addBuilding(this);
     }

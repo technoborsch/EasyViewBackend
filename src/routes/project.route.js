@@ -29,7 +29,7 @@ router.get(
 	async (req, res) => {
 		return res.json(await Project._getUserProjectsList(req.user));
 	}
-); //TODO make "my" be a parameter to get all projects route
+);
 // Get project by slug
 router.get(
 	'/projects/:username/:slug',
