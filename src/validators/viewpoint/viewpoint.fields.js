@@ -3,9 +3,6 @@ const {
     isBoolean
 } = require("validator");
 const {
-    startsOrEndsWithWhiteSpace,
-    usernameValidator,
-    slugValidator,
     idValidator,
 } = require("../common");
 
@@ -17,6 +14,11 @@ class ViewpointFields {
     static description = (description) => {
         if (description[0] === ' ' || description[description.length - 1] === ' ') {return false;}
         return description.length < 500;
+    };
+
+    static text = (text) => {
+        if (text[0] === ' ' || text[text.length - 1] === ' ') {return false;}
+        return text.length < 50;
     };
 
     static position = (position) => {
@@ -68,6 +70,26 @@ class ViewpointFields {
         }
         return true;
     };
+
+    static notes = (notes) => {
+        const fields = [
+            ['text', ViewpointFields.text],
+            ['position', ViewpointFields.position]
+        ];
+        if (!Array.isArray(notes)) {return false;} // It should be an array
+        for (const element of notes) {
+            //And this array should include only objects
+            if (typeof element !== 'object' || Array.isArray(element) || element === null) {return false;}
+            //And this object should have only specified keys
+            if (Object.keys(element).length !== fields.length) {return false;}
+            //And specified key values should be valid too
+            for (const attribute of fields) {
+                if (!Object.hasOwn(element, attribute[0])) {return false;}
+                if (!attribute[1](element[attribute[0]])) {return false;}
+            }
+        }
+        return true;
+    }
 }
 
 module.exports = ViewpointFields;

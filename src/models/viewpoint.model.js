@@ -47,6 +47,16 @@ const viewPointSchema = new Schema({
     clipConstants: {
         type: [Number],
     },
+    notes: [{
+        text: {
+            type: String,
+            required: true,
+        },
+        position: {
+            type: [Number], //x, y, z
+            required: true,
+        },
+    }],
 }, {
     statics: {
         async _getById(user, id) {
@@ -148,6 +158,7 @@ const viewPointSchema = new Schema({
                 distanceToTarget: this.distanceToTarget,
                 clipConstantsStatus: this.clipConstantsStatus,
                 clipConstants: this.clipConstants,
+                notes: this.notes,
             };
         },
     },

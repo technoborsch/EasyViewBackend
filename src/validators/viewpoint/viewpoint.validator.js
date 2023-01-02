@@ -27,6 +27,7 @@ const createViewpointValidator = (req, res, next) => {
             ['clipConstantsStatus', fv.clipConstantsStatus],
             ['clipConstants', fv.clipConstants],
             ['public', fv.public],
+            ['notes', fv.notes],
         ],
     );
     validateBody(req);
@@ -46,6 +47,7 @@ const editViewpointValidator = (req, res, next) => {
             ['clipConstantsStatus', fv.clipConstantsStatus],
             ['clipConstants', fv.clipConstants],
             ['public', fv.public],
+            ['notes', fv.notes],
         ],
     );
     const validateParams = requestPropertyValidatorFactory(

@@ -82,10 +82,15 @@ describe('Tests for viewpoint feature', () => {
             quaternion: [0, 0, 0, 0],
             distanceToTarget: 1000,
             public: true,
+            notes: [
+                {text: 'First note', position: [3, 3, 3]},
+                {text: 'Second note', position: [3, -3, 3]},
+            ],
         };
 
         viewpoint1data = {
             ...viewpoint1creationData,
+            notes: null,
             id: null,
             author: user1.id,
             description: null,
@@ -102,6 +107,7 @@ describe('Tests for viewpoint feature', () => {
         viewpoint2data = {
             ...viewpoint1data,
             ...viewpoint2creationData,
+            notes: null,
         };
 
         viewpoint1update = {
